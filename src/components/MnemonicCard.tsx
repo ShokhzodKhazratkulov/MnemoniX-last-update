@@ -1,0 +1,302 @@
+
+import React, { useEffect, useState, useRef } from 'react';
+import { MnemonicResponse, Language } from '../types';
+import { GeminiService } from '../services/geminiService';
+import { Sparkles, Volume2, Eye, Loader2 } from 'lucide-react';
+import { decode, decodeAudioData } from '../utils/audioUtils';
+import { AnimatePresence } from 'motion/react';
+
+interface Props {
+  data: MnemonicResponse;
+  imageUrl: string;
+  language: Language;
+  onSearch?: (word: string) => void;
+  onPractice?: (word: string, meaning: string) => void;
+  t: any;
+}
+
+const gemini = new GeminiService();
+
+export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSearch, onPractice, t }) => {
+  const [timer, setTimer] = useState(5);
+  const [showContent, setShowContent] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [isImageRevealed, setIsImageRevealed] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const isMounted = useRef(true);
+
+  const handleSynonymClick = (syn: string) => {
+    if (!onSearch) return;
+    const word = syn.split('(')[0].trim();
+    onSearch(word);
+  };
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (sourceRef.current) {
+        try { sourceRef.current.stop(); } catch (e) {}
+      }
+    };
+  }, []);
+
+  const researchNote = t.researchNote;
+
+  const revealText = t.revealImage;
+
+  const safeData = {
+    word: data?.word || 'English Word',
+    transcription: data?.transcription || '...',
+    meaning: data?.meaning || 'Translation',
+    morphology: data?.morphology || '...',
+    imagination: data?.imagination || '...',
+    phoneticLink: data?.phoneticLink || '...',
+    connectorSentence: data?.connectorSentence || '...',
+    examples: Array.isArray(data?.examples) ? data.examples : [],
+    synonyms: Array.isArray(data?.synonyms) ? data.synonyms : []
+  };
+
+  useEffect(() => {
+    setShowContent(true);
+    setTimer(5);
+    setAudioError(null);
+    setIsImageRevealed(false);
+    const interval = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [data]);
+
+  const handlePlayAudio = async (text?: string) => {
+    if (isPlaying) {
+      if (sourceRef.current) {
+        try { sourceRef.current.stop(); } catch (e) {}
+      }
+      setIsPlaying(false);
+      return;
+    }
+
+    setAudioError(null);
+    setIsAudioLoading(true);
+    try {
+      let audioBuffer: AudioBuffer | null = null;
+      
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+
+      // If we have a stored audio URL and we're playing the main story, use it
+      if (data.audioUrl && !text) {
+        const response = await fetch(data.audioUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // Use custom PCM decoder because we store raw PCM bytes in Supabase
+        audioBuffer = await decodeAudioData(uint8Array, audioContextRef.current, 24000, 1);
+      } else {
+        // Fallback to Gemini TTS
+        const ttsText = text || `${safeData.word}. ${safeData.meaning}. ${safeData.phoneticLink}. ${safeData.imagination}. ${safeData.connectorSentence}`;
+        const base64Audio = await gemini.generateTTS(ttsText, language);
+
+        if (!base64Audio) {
+          throw new Error("No audio data received from API");
+        }
+
+        const decodedData = decode(base64Audio);
+        audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+      }
+
+      if (!audioBuffer) {
+        throw new Error("Failed to decode audio buffer");
+      }
+
+      const source = audioContextRef.current.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContextRef.current.destination);
+      source.onended = () => {
+        if (isMounted.current) setIsPlaying(false);
+      };
+      
+      sourceRef.current = source;
+      source.start(0);
+      if (isMounted.current) setIsPlaying(true);
+    } catch (error: any) {
+      console.error("Audio Playback Error:", error);
+      const message = error?.message || String(error);
+      const isQuota = message.includes('429') || message.includes('RESOURCE_EXHAUSTED');
+      if (isMounted.current) setAudioError(isQuota ? "Audio limit reached (429). Please wait." : "Audio error. Try again.");
+    } finally {
+      if (isMounted.current) setIsAudioLoading(false);
+    }
+  };
+
+  return (
+    <div className={`transition-all duration-700 transform ${showContent ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'} max-w-4xl mx-auto space-y-8`}>
+      <div className="text-center space-y-6">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center justify-center gap-4 sm:gap-8">
+            <h1 className="text-4xl sm:text-8xl font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">{safeData.word}</h1>
+            <div className="flex flex-col items-center gap-2">
+              <button 
+                onClick={() => handlePlayAudio()}
+                disabled={isAudioLoading}
+                className={`group relative w-12 h-12 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all shadow-xl ${
+                  isPlaying ? 'bg-red-500 text-white animate-pulse' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                } disabled:bg-gray-100 dark:disabled:bg-slate-900 flex-shrink-0`}
+                title="Listen to Mnemonic Story"
+              >
+                {isAudioLoading ? (
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 border-4 border-white/30 border-t-white animate-spin rounded-full" /> 
+                ) : isPlaying ? (
+                  <svg className="w-6 h-6 sm:w-10 sm:h-10" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-8 h-8 sm:w-12 sm:h-12 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7 4l10 8-10 8z" />
+                  </svg>
+                )}
+                
+                {/* Tooltip-like label */}
+                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden sm:block">
+                  {t.listenStory}
+                </span>
+              </button>
+            </div>
+          </div>
+          {audioError && <p className="text-xs font-bold text-red-500 animate-bounce">{audioError}</p>}
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-center gap-3">
+            <p className="text-2xl sm:text-3xl text-gray-400 dark:text-gray-500 font-mono font-medium tracking-tight">
+              [{safeData.transcription}]
+            </p>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => handlePlayAudio(safeData.word)}
+                disabled={isAudioLoading}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  isPlaying ? 'text-red-500' : 'text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800'
+                } disabled:opacity-50`}
+                title="Pronounce word"
+              >
+                <Volume2 size={20} />
+              </button>
+            </div>
+          </div>
+          <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 font-bold">
+            {safeData.meaning}
+          </p>
+        </div>
+        
+        <div className="inline-block px-6 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl text-sm font-black uppercase tracking-widest border border-indigo-100/50 dark:border-indigo-800/30">
+          {safeData.morphology}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 items-start">
+        <div className="relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-slate-800 max-w-2xl mx-auto w-full group">
+          <img 
+            src={imageUrl || 'https://placehold.co/600x600?text=Imagining...'} 
+            alt={safeData.word} 
+            className={`w-full h-auto object-cover min-h-[300px] transition-all duration-700 ${!isImageRevealed ? 'blur-3xl scale-110' : 'blur-0 scale-100'}`} 
+          />
+          
+          {!isImageRevealed && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center p-4 sm:p-8 text-center space-y-3 sm:space-y-6">
+              <div className="max-w-md space-y-3 sm:space-y-4">
+                <p className="text-white text-[10px] sm:text-xl font-medium leading-relaxed drop-shadow-lg px-2">
+                  {researchNote}
+                </p>
+                <button 
+                  onClick={() => setIsImageRevealed(true)}
+                  className="inline-flex items-center gap-2 sm:gap-3 px-4 py-2 sm:px-8 sm:py-4 bg-white text-indigo-600 rounded-xl sm:rounded-2xl font-black text-xs sm:text-lg shadow-2xl hover:bg-indigo-50 transition-all active:scale-95"
+                >
+                  <Eye size={16} className="sm:w-6 sm:h-6" />
+                  <span>{revealText}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {timer > 0 && isImageRevealed && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white p-6 text-center">
+              <p className="text-lg font-bold mb-2">
+                {t.visualizeThis}
+              </p>
+              <p className="text-6xl font-black">{timer}</p>
+              <p className="mt-4 text-sm opacity-80">
+                {t.closeEyes}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-6 max-w-2xl mx-auto w-full">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border-l-8 border-orange-400 transition-transform hover:scale-[1.02]">
+            <h3 className="text-orange-600 dark:text-orange-400 font-bold uppercase text-[10px] tracking-widest mb-2 opacity-60">
+              {t.phoneticLink}
+            </h3>
+            <p className="text-gray-800 dark:text-gray-200 text-lg font-medium italic">{safeData.phoneticLink}</p>
+          </div>
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border-l-8 border-indigo-500 transition-transform hover:scale-[1.01]">
+            <h3 className="text-indigo-600 dark:text-indigo-400 font-bold uppercase text-[10px] tracking-widest mb-2 opacity-60">
+              {t.imagination}
+            </h3>
+            <p className="text-gray-800 dark:text-gray-200 text-lg leading-relaxed">{safeData.imagination}</p>
+          </div>
+          <div className="bg-indigo-600 p-4 sm:p-6 rounded-2xl shadow-xl text-white transition-transform hover:scale-[1.02]">
+             <h3 className="text-indigo-200 font-bold uppercase text-[10px] tracking-widest mb-2 opacity-80">
+               {t.mnemonicKey}
+             </h3>
+            <p className="text-lg sm:text-xl font-semibold italic">"{safeData.connectorSentence}"</p>
+          </div>
+          <div className="bg-gray-100 dark:bg-slate-800/50 p-6 rounded-2xl border border-gray-200 dark:border-slate-800">
+             <h3 className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] tracking-widest mb-4">
+               {t.synonyms}
+             </h3>
+             <div className="flex flex-wrap gap-2">
+               {safeData.synonyms.map((syn, idx) => (
+                 <button 
+                   key={idx} 
+                   onClick={() => handleSynonymClick(syn)}
+                   className="px-3 py-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition-all"
+                 >
+                   {syn}
+                 </button>
+               ))}
+             </div>
+          </div>
+          <div className="bg-gray-100 dark:bg-slate-800/50 p-6 rounded-2xl border border-gray-200 dark:border-slate-800">
+             <h3 className="text-gray-400 dark:text-gray-500 font-bold uppercase text-[10px] tracking-widest mb-4">
+               {t.examples}
+             </h3>
+             <ul className="space-y-3">
+               {safeData.examples.map((ex, idx) => (
+                 <li key={idx} className="text-gray-700 dark:text-gray-300 italic flex gap-3">
+                   <span className="text-indigo-400 font-bold">•</span>
+                   {ex}
+                 </li>
+               ))}
+             </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
