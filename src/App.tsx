@@ -1194,8 +1194,9 @@ export default function App() {
                 userRemixCount={posts.filter(p => p.post_metadata.user_id === user?.id && !!p.remix_data).length}
                 onSignOut={async () => { 
                   await supabase.auth.signOut();
-                  setIsGuest(false); 
+                  setIsGuest(true); 
                   setUser(null); 
+                  setView(AppView.AUTH);
                 }} 
                 onSignIn={() => navigateTo(AppView.AUTH)}
                 onNavigate={navigateTo}
