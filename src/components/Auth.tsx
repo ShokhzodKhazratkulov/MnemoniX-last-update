@@ -110,7 +110,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
       </div>
 
       {/* Right Pane - Auth Form */}
-      <div className="flex-1 flex flex-col p-6 lg:p-16 justify-center relative overflow-y-auto">
+      <div className="flex-1 flex flex-col p-6 lg:p-16 justify-center relative overflow-hidden">
         <div className="max-w-md w-full mx-auto">
           <div className="mb-12">
             <h2 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
@@ -198,7 +198,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
               disabled={loading}
               className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-lg"
             >
-              {loading ? <Loader2 className="animate-spin" size={24} /> : (isSignUp ? t.createAccount : t.signIn)}
+              {loading ? <Loader2 className="animate-spin" size={24} /> : (isSignUp ? t.signUp : t.signIn)}
             </button>
           </form>
 
