@@ -296,6 +296,21 @@ export const Flashcards = React.memo(({
     setIsFlipped(false);
   }, [currentIndex]);
 
+  // Pre-load images for next cards to ensure instant display
+  useEffect(() => {
+    if (isStarted && filtered.length > 0 && shuffledIndices.length > 0) {
+      // Pre-load next 3 cards
+      for (let i = 1; i <= 3; i++) {
+        const nextIdx = (currentIndex + i) % filtered.length;
+        const mnemonic = filtered[shuffledIndices[nextIdx]];
+        if (mnemonic?.imageUrl) {
+          const img = new Image();
+          img.src = mnemonic.imageUrl;
+        }
+      }
+    }
+  }, [isStarted, currentIndex, shuffledIndices, filtered]);
+
   // Scroll back side to top when flipped
   useEffect(() => {
     if (isFlipped && backSideRef.current) {
@@ -461,7 +476,15 @@ export const Flashcards = React.memo(({
           
           {/* Front Side */}
           <div className="absolute inset-0 backface-hidden bg-white dark:bg-[#0f172a] rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border-4 border-gray-100 dark:border-slate-800">
-            <img src={current.imageUrl} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Word Visual" referrerPolicy="no-referrer" />
+            <img 
+              key={current.id}
+              src={current.imageUrl} 
+              className="absolute inset-0 w-full h-full object-cover opacity-60" 
+              alt="Word Visual" 
+              referrerPolicy="no-referrer"
+              loading="eager"
+              decoding="async"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-10">
               <h3 className={`${getFontSize(current.word)} font-black text-white tracking-tight drop-shadow-lg`}>{current.word}</h3>
               <p className="text-white/70 font-mono mt-2 text-lg sm:text-xl drop-shadow-md">[{current.data.transcription}]</p>
@@ -673,6 +696,17 @@ export const Flashcards = React.memo(({
           background: rgba(255, 255, 255, 0.2);
         }
       `}</style>
+
+      {/* Pre-load next images for instant display */}
+      <div className="hidden" aria-hidden="true">
+        {isStarted && filtered.length > 0 && shuffledIndices.length > 0 && [1, 2, 3].map(i => {
+          const nextIdx = (currentIndex + i) % filtered.length;
+          const mnemonic = filtered[shuffledIndices[nextIdx]];
+          return mnemonic?.imageUrl ? (
+            <img key={mnemonic.id} src={mnemonic.imageUrl} referrerPolicy="no-referrer" />
+          ) : null;
+        })}
+      </div>
     </div>
   );
 });
