@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, X, Sparkles, MousePointer2 } from 'lucide-react';
+import { ChevronRight, X, Sparkles } from 'lucide-react';
 import { AppView } from '../types';
 
 interface TourStep {
@@ -21,9 +21,7 @@ interface Props {
 export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView, onNavigate }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [isWaiting, setIsWaiting] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const steps: TourStep[] = [
     {
@@ -66,9 +64,8 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
 
   const currentStep = steps[stepIndex];
 
-  // Handle step transitions and delays
+  // Handle step transitions
   useEffect(() => {
-    setIsWaiting(true);
     setShowTooltip(false);
     
     // Navigate first
@@ -76,36 +73,32 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
       onNavigate(currentStep.view);
     }
 
-    // Set delay based on step
-    const delay = stepIndex === 0 ? 3000 : 2000;
-
-    if (timerRef.current) clearTimeout(timerRef.current);
-    
-    timerRef.current = setTimeout(() => {
-      setIsWaiting(false);
+    // Small delay to allow view transition and element rendering
+    const timer = setTimeout(() => {
       setShowTooltip(true);
-    }, delay);
+    }, 400);
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    return () => clearTimeout(timer);
   }, [stepIndex]);
 
   // Update target rectangle
   useEffect(() => {
     const updateRect = () => {
-      const element = document.querySelector(currentStep.target);
+      const elements = document.querySelectorAll(currentStep.target);
+      // Find the visible one (mobile vs desktop)
+      const element = Array.from(elements).find(el => {
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden' && el.getBoundingClientRect().width > 0;
+      });
+
       if (element) {
         setTargetRect(element.getBoundingClientRect());
       }
     };
 
-    // Small delay to allow view transition and element rendering
-    const timer = setTimeout(updateRect, 300);
+    const timer = setTimeout(updateRect, 500);
     window.addEventListener('resize', updateRect);
-    
-    // Also poll for rect changes during waiting period (in case of layout shifts)
-    const pollInterval = setInterval(updateRect, 100);
+    const pollInterval = setInterval(updateRect, 200);
 
     return () => {
       clearTimeout(timer);
@@ -152,30 +145,6 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
         )}
       </AnimatePresence>
 
-      {/* Pointing Cursor during waiting */}
-      <AnimatePresence>
-        {isWaiting && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5, x: 20, y: 20 }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1, 
-              x: targetRect.left + targetRect.width / 2, 
-              y: targetRect.top + targetRect.height / 2 + 20 
-            }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="absolute z-[110] text-indigo-500 drop-shadow-[0_0_10px_rgba(79,70,229,0.5)]"
-          >
-            <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
-            >
-              <MousePointer2 size={48} fill="currentColor" className="rotate-[225deg]" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Highlight ring */}
       <AnimatePresence>
         {showTooltip && (
@@ -205,8 +174,8 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
             className="absolute pointer-events-auto bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 max-w-xs w-full"
             style={{
-              top: targetRect.bottom + 24 > window.innerHeight - 200 ? 'auto' : targetRect.bottom + 24,
-              bottom: targetRect.bottom + 24 > window.innerHeight - 200 ? window.innerHeight - targetRect.top + 24 : 'auto',
+              top: targetRect.bottom + 24 > window.innerHeight - 250 ? 'auto' : targetRect.bottom + 24,
+              bottom: targetRect.bottom + 24 > window.innerHeight - 250 ? window.innerHeight - targetRect.top + 24 : 'auto',
               left: Math.min(Math.max(20, targetRect.left + targetRect.width / 2 - 160), window.innerWidth - 340),
             }}
           >
