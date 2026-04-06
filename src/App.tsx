@@ -36,6 +36,7 @@ import { decode, decodeAudioData } from './utils/audioUtils';
 import { getStorageUrl } from './services/supabase';
 
 // Components
+import { QuickTour } from './components/QuickTour';
 import { Dashboard } from './components/Dashboard';
 import { Flashcards } from './components/Flashcards';
 import { MnemonicCard } from './components/MnemonicCard';
@@ -65,6 +66,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<AppView>(AppView.HOME);
   const [viewHistory, setViewHistory] = useState<AppView[]>([]);
+  const [showTour, setShowTour] = useState(false);
   const [state, setState] = useState<AppState>(AppState.IDLE);
   const [isFlashcardDetailOpen, setIsFlashcardDetailOpen] = useState(false);
   const [isFlashcardReviewOpen, setIsFlashcardReviewOpen] = useState(false);
@@ -81,6 +83,21 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const { posts, fetchPosts } = usePosts();
   const [showFeedback, setShowFeedback] = useState(false);
+
+  const handleTourComplete = async () => {
+    setShowTour(false);
+    if (user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ has_completed_tour: true })
+          .eq('id', user.id);
+        setUserProfile(prev => prev ? { ...prev, has_completed_tour: true } as UserProfileType : null);
+      } catch (err) {
+        console.error('Error updating tour status:', err);
+      }
+    }
+  };
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedMnemonicForReview, setSelectedMnemonicForReview] = useState<SavedMnemonic | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
@@ -244,6 +261,8 @@ export default function App() {
         }
         if (!data.is_personalized && view !== AppView.PERSONALIZATION) {
           setView(AppView.PERSONALIZATION);
+        } else if (data.is_personalized && !data.has_completed_tour && view !== AppView.PERSONALIZATION) {
+          setShowTour(true);
         }
       } else {
         // Create profile if not exists
@@ -905,15 +924,16 @@ export default function App() {
               {/* Center Nav - Pill */}
               <div className="flex items-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-gray-100 dark:border-slate-800 p-1.5 rounded-full shadow-sm">
                 {[
-                  { id: AppView.HOME, label: t.navHome },
-                  { id: AppView.SEARCH, label: t.navSearch },
-                  { id: AppView.POSTS, label: t.navPosts },
-                  { id: AppView.FLASHCARDS, label: t.navFlash },
-                  { id: AppView.DASHBOARD, label: t.navDash }
+                  { id: AppView.HOME, label: t.navHome, tour: "home" },
+                  { id: AppView.SEARCH, label: t.navSearch, tour: "search" },
+                  { id: AppView.POSTS, label: t.navPosts, tour: "posts" },
+                  { id: AppView.FLASHCARDS, label: t.navFlash, tour: "flashcards" },
+                  { id: AppView.DASHBOARD, label: t.navDash, tour: "dashboard" }
                 ].map((item) => (
                   <button
                     key={item.id}
                     onClick={() => navigateTo(item.id)}
+                    data-tour={item.tour}
                     className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
                       view === item.id 
                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
@@ -938,6 +958,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setView(AppView.PROFILE)}
+                  data-tour="profile"
                   className="w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 border border-gray-100 dark:border-slate-800 rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm overflow-hidden"
                 >
                   {userProfile?.avatar_url ? (
@@ -1151,6 +1172,7 @@ export default function App() {
                   setLanguage(settings.preferred_language);
                   fetchProfile(user.id);
                   setView(AppView.HOME);
+                  setShowTour(true);
                 }} 
               />
             </motion.div>
@@ -1419,15 +1441,16 @@ export default function App() {
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl border-t border-gray-100 dark:border-slate-800/50 pb-safe">
           <div className="max-w-md mx-auto flex items-center justify-around px-1 py-1">
             {[
-              { id: AppView.HOME, icon: <Home size={22} />, label: t.navHome },
-              { id: AppView.SEARCH, icon: <Search size={22} />, label: t.navSearch },
-              { id: AppView.POSTS, icon: <MessageSquare size={22} />, label: t.navPosts },
-              { id: AppView.FLASHCARDS, icon: <Layers size={22} />, label: t.navFlash },
-              { id: AppView.DASHBOARD, icon: <LayoutDashboard size={22} />, label: t.navDash }
+              { id: AppView.HOME, icon: <Home size={22} />, label: t.navHome, tour: "home" },
+              { id: AppView.SEARCH, icon: <Search size={22} />, label: t.navSearch, tour: "search" },
+              { id: AppView.POSTS, icon: <MessageSquare size={22} />, label: t.navPosts, tour: "posts" },
+              { id: AppView.FLASHCARDS, icon: <Layers size={22} />, label: t.navFlash, tour: "flashcards" },
+              { id: AppView.DASHBOARD, icon: <LayoutDashboard size={22} />, label: t.navDash, tour: "dashboard" }
             ].map((item) => (
               <button
                 key={item.id}
                 onClick={() => navigateTo(item.id)}
+                data-tour={item.tour}
                 className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
                   view === item.id 
                     ? 'text-indigo-600 dark:text-indigo-400' 
@@ -1461,6 +1484,16 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      {showTour && (
+        <QuickTour 
+          onComplete={handleTourComplete}
+          onSkip={handleTourComplete}
+          t={t}
+          currentView={view}
+          onNavigate={navigateTo}
+        />
+      )}
     </div>
   );
 }

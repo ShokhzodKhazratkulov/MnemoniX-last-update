@@ -77,6 +77,7 @@ export interface Profile {
   daily_goal?: number;
   ielts_goal?: number;
   is_personalized?: boolean;
+  has_completed_tour?: boolean;
 }
 
 export interface Post {
