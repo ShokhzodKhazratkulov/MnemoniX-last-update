@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import imageCompression from 'browser-image-compression';
 import { 
   Search, 
   Sparkles, 
@@ -515,10 +516,21 @@ export default function App() {
           if (base64Image) {
             try {
               const imageBlob = await (await fetch(base64Image)).blob();
-              const fileName = `${correctedWord}-${contentLanguage}-${Date.now()}.png`;
+              
+              // Compress image before upload
+              const options = {
+                maxSizeMB: 0.2, // Max size 200KB
+                maxWidthOrHeight: 1024,
+                useWebWorker: true,
+                fileType: 'image/webp' // Use webp for better compression
+              };
+              
+              const compressedFile = await imageCompression(imageBlob as File, options);
+              const fileName = `${correctedWord}-${contentLanguage}-${Date.now()}.webp`;
+              
               const { error: uploadError } = await supabase.storage
                 .from('mnemonic_assets')
-                .upload(`images/${fileName}`, imageBlob, { upsert: true });
+                .upload(`images/${fileName}`, compressedFile, { upsert: true });
               
               if (!uploadError) {
                 storedImageUrl = getStorageUrl('mnemonic_assets', `images/${fileName}`);

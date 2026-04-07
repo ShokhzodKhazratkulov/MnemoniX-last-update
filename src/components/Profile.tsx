@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import imageCompression from 'browser-image-compression';
 import { 
   User as UserIcon, 
   BookOpen, 
@@ -166,13 +167,21 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
 
     setIsUpdating(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      // Compress image before upload
+      const options = {
+        maxSizeMB: 0.1, // Max size 100KB for avatars
+        maxWidthOrHeight: 512,
+        useWebWorker: true,
+        fileType: 'image/webp'
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      const fileName = `${user.id}-${Math.random()}.webp`;
       const filePath = `avatars/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('mnemonic_assets')
-        .upload(filePath, file);
+        .upload(filePath, compressedFile);
 
       if (uploadError) throw uploadError;
 
