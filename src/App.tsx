@@ -52,6 +52,7 @@ import { PracticePartner } from './components/PracticePartner';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategoryDetailPage } from './components/CategoryDetailPage';
 import { Personalization } from './components/Personalization';
+import { BulkUpload } from './components/BulkUpload';
 
 import { TRANSLATIONS } from './constants/translations';
 import { Profile as UserProfileType } from './types';
@@ -1170,6 +1171,7 @@ export default function App() {
                 savedMnemonics={savedMnemonics} 
                 language={contentLanguage} 
                 onDelete={handleDelete} 
+                onNavigate={navigateTo}
                 t={t.dashboard} 
                 fullT={t}
                 profile={userProfile}
@@ -1394,6 +1396,17 @@ export default function App() {
                   t={t}
                 />
               </div>
+            </motion.div>
+          )}
+
+          {view === AppView.BULK_UPLOAD && (
+            <motion.div key="bulk-upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <BulkUpload 
+                onBack={() => setView(AppView.DASHBOARD)} 
+                t={t} 
+                user={user}
+                currentLanguage={contentLanguage}
+              />
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,0 +1,427 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Upload, 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  CheckCircle2, 
+  AlertCircle, 
+  Loader2, 
+  ChevronLeft,
+  Settings,
+  Database,
+  Languages
+} from 'lucide-react';
+import { Language, AppView, MnemonicResponse } from '../types';
+import { GeminiService } from '../services/geminiService';
+import { supabase } from '../supabaseClient';
+import imageCompression from 'browser-image-compression';
+
+interface Props {
+  onBack: () => void;
+  t: any;
+  user: any;
+  currentLanguage: Language;
+}
+
+interface WordProgress {
+  word: string;
+  status: 'pending' | 'processing' | 'completed' | 'error';
+  error?: string;
+}
+
+export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }) => {
+  const [inputText, setInputText] = useState('');
+  const [words, setWords] = useState<WordProgress[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [targetLanguage, setTargetLanguage] = useState<Language>(currentLanguage);
+  const [logs, setLogs] = useState<string[]>([]);
+  
+  const gemini = new GeminiService();
+  const stopRef = useRef(false);
+
+  // Load progress from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('bulk_upload_progress');
+    if (saved) {
+      const { words: savedWords, index, lang } = JSON.parse(saved);
+      setWords(savedWords);
+      setCurrentIndex(index);
+      setTargetLanguage(lang);
+    }
+  }, []);
+
+  // Save progress to localStorage
+  useEffect(() => {
+    if (words.length > 0) {
+      localStorage.setItem('bulk_upload_progress', JSON.stringify({
+        words,
+        index: currentIndex,
+        lang: targetLanguage
+      }));
+    }
+  }, [words, currentIndex, targetLanguage]);
+
+  const handleParse = () => {
+    const parsedWords = inputText
+      .split(/[\n,]/)
+      .map(w => w.trim())
+      .filter(w => w.length > 0)
+      .map(word => ({ word, status: 'pending' as const }));
+    
+    setWords(parsedWords);
+    setCurrentIndex(0);
+    setLogs([`Parsed ${parsedWords.length} words.`]);
+  };
+
+  const addLog = (msg: string) => {
+    setLogs(prev => [msg, ...prev].slice(0, 50));
+  };
+
+  const processWord = async (index: number) => {
+    const wordProgress = words[index];
+    if (!wordProgress) return;
+
+    setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'processing' } : w));
+    addLog(`Processing: ${wordProgress.word}...`);
+
+    try {
+      // 1. Check if word already exists for this language
+      const { data: existing } = await supabase
+        .from('mnemonics')
+        .select('id')
+        .eq('word', wordProgress.word.toLowerCase())
+        .eq('language', targetLanguage)
+        .single();
+
+      if (existing) {
+        addLog(`Word "${wordProgress.word}" already exists in DB. Skipping AI generation.`);
+        setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
+        return;
+      }
+
+      // 2. Generate Mnemonic
+      const mnemonicData = await gemini.getMnemonic(wordProgress.word, targetLanguage);
+      
+      // 3. Generate Image
+      const base64Image = await gemini.generateImage(mnemonicData.imagePrompt);
+      let storedImageUrl = '';
+      
+      if (base64Image) {
+        const imageBlob = await (await fetch(base64Image)).blob();
+        const options = {
+          maxSizeMB: 0.2,
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+          fileType: 'image/webp'
+        };
+        const compressedFile = await imageCompression(imageBlob as File, options);
+        const fileName = `${mnemonicData.word}-${targetLanguage}-${Date.now()}.webp`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('mnemonic_assets')
+          .upload(`mnemonics/${fileName}`, compressedFile);
+        
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('mnemonic_assets')
+            .getPublicUrl(`mnemonics/${fileName}`);
+          storedImageUrl = publicUrl;
+        }
+      }
+
+      // 4. Generate TTS
+      const audioBase64 = await gemini.generateTTS(
+        `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.connectorSentence}`,
+        targetLanguage
+      );
+      
+      let storedAudioUrl = '';
+      if (audioBase64) {
+        const audioBlob = await (await fetch(`data:audio/mp3;base64,${audioBase64}`)).blob();
+        const audioFileName = `${mnemonicData.word}-${targetLanguage}-${Date.now()}.mp3`;
+        
+        const { error: audioUploadError } = await supabase.storage
+          .from('mnemonic_assets')
+          .upload(`audio/${audioFileName}`, audioBlob);
+        
+        if (!audioUploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('mnemonic_assets')
+            .getPublicUrl(`audio/${audioFileName}`);
+          storedAudioUrl = publicUrl;
+        }
+      }
+
+      // 5. Save to Database
+      const { error: dbError } = await supabase
+        .from('mnemonics')
+        .insert({
+          word: mnemonicData.word.toLowerCase(),
+          language: targetLanguage,
+          data: mnemonicData,
+          image_url: storedImageUrl,
+          audio_url: storedAudioUrl
+        });
+
+      if (dbError) throw dbError;
+
+      setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
+      addLog(`Success: ${wordProgress.word}`);
+
+    } catch (error: any) {
+      console.error(`Error processing ${wordProgress.word}:`, error);
+      const errorMsg = error?.message || 'Unknown error';
+      setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'error', error: errorMsg } : w));
+      addLog(`Error (${wordProgress.word}): ${errorMsg}`);
+      
+      // If it's a quota error, stop processing
+      if (errorMsg.includes('429') || errorMsg.includes('quota')) {
+        setIsProcessing(false);
+        stopRef.current = true;
+        addLog("Quota exceeded. Pausing. Please update API key in settings and resume.");
+      }
+    }
+  };
+
+  const startProcessing = async () => {
+    setIsProcessing(true);
+    stopRef.current = false;
+    
+    for (let i = currentIndex; i < words.length; i++) {
+      if (stopRef.current) break;
+      if (words[i].status === 'completed') {
+        setCurrentIndex(i + 1);
+        continue;
+      }
+      
+      setCurrentIndex(i);
+      await processWord(i);
+      
+      // Small delay between words to be safe
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    
+    setIsProcessing(false);
+  };
+
+  const handlePause = () => {
+    stopRef.current = true;
+    setIsProcessing(false);
+    addLog("Paused by user.");
+  };
+
+  const handleReset = () => {
+    if (confirm("Clear all progress?")) {
+      setWords([]);
+      setCurrentIndex(0);
+      setInputText('');
+      setLogs([]);
+      localStorage.removeItem('bulk_upload_progress');
+    }
+  };
+
+  const completedCount = words.filter(w => w.status === 'completed').length;
+  const errorCount = words.filter(w => w.status === 'error').length;
+  const progress = words.length > 0 ? (completedCount / words.length) * 100 : 0;
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-fadeIn pb-32">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <button 
+          onClick={onBack}
+          className="p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-800 hover:scale-110 transition-transform active:scale-95 flex items-center gap-2 font-black text-gray-600 dark:text-gray-400"
+        >
+          <ChevronLeft size={24} />
+          {t.back}
+        </button>
+        <div className="text-right">
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Bulk Upload</h2>
+          <p className="text-gray-500 font-bold">AI Mnemonic Generator</p>
+        </div>
+      </div>
+
+      {words.length === 0 ? (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-xl space-y-6"
+        >
+          <div className="space-y-2">
+            <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <Database size={16} />
+              Word List
+            </label>
+            <textarea 
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Enter words separated by new lines or commas (e.g. apple, banana, cherry...)"
+              className="w-full h-64 p-6 bg-gray-50 dark:bg-slate-800/50 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-3xl focus:border-indigo-500 focus:ring-0 transition-all font-mono text-sm resize-none"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 space-y-2">
+              <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <Languages size={16} />
+                Target Language
+              </label>
+              <select 
+                value={targetLanguage}
+                onChange={(e) => setTargetLanguage(e.target.value as Language)}
+                className="w-full p-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 rounded-2xl font-bold"
+              >
+                {Object.values(Language).map(lang => (
+                  <option key={lang} value={lang}>{lang}</option>
+                ))}
+              </select>
+            </div>
+            <button 
+              onClick={handleParse}
+              disabled={!inputText.trim()}
+              className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Upload size={20} />
+              Parse Words
+            </button>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="space-y-6">
+          {/* Progress Card */}
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-xl space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white">Processing Queue</h3>
+                <p className="text-gray-500 font-bold">
+                  {completedCount} of {words.length} completed
+                  {errorCount > 0 && <span className="text-rose-500 ml-2">({errorCount} errors)</span>}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {!isProcessing ? (
+                  <button 
+                    onClick={startProcessing}
+                    className="p-4 bg-emerald-500 text-white rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-none hover:bg-emerald-600 transition-all active:scale-95 flex items-center gap-2 font-black"
+                  >
+                    <Play size={20} />
+                    {currentIndex > 0 ? 'Resume' : 'Start'}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handlePause}
+                    className="p-4 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-200 dark:shadow-none hover:bg-amber-600 transition-all active:scale-95 flex items-center gap-2 font-black"
+                  >
+                    <Pause size={20} />
+                    Pause
+                  </button>
+                )}
+                <button 
+                  onClick={handleReset}
+                  className="p-4 bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 rounded-2xl hover:bg-gray-200 transition-all active:scale-95"
+                >
+                  <RotateCcw size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className="h-full bg-indigo-600"
+                />
+              </div>
+              <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <span>0%</span>
+                <span>{Math.round(progress)}%</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            {/* Current Word Status */}
+            {isProcessing && words[currentIndex] && (
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-4">
+                <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+                <div>
+                  <p className="text-xs font-black text-indigo-600 uppercase tracking-widest">Now Generating</p>
+                  <p className="text-lg font-black text-gray-900 dark:text-white">{words[currentIndex].word}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Word List & Logs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Word List */}
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-lg overflow-hidden flex flex-col h-[400px]">
+              <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Queue</span>
+                <span className="text-xs font-bold text-gray-500">{words.length} words</span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {words.map((w, i) => (
+                  <div 
+                    key={i}
+                    className={`flex items-center justify-between p-3 rounded-xl text-sm font-bold ${
+                      i === currentIndex && isProcessing ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 
+                      w.status === 'completed' ? 'text-emerald-600' :
+                      w.status === 'error' ? 'text-rose-600' :
+                      'text-gray-500'
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="text-[10px] opacity-50 w-4">{i + 1}</span>
+                      {w.word}
+                    </span>
+                    {w.status === 'completed' && <CheckCircle2 size={16} />}
+                    {w.status === 'error' && <AlertCircle size={16} />}
+                    {w.status === 'processing' && <Loader2 size={16} className="animate-spin" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Logs */}
+            <div className="bg-slate-900 rounded-[2rem] shadow-lg overflow-hidden flex flex-col h-[400px]">
+              <div className="p-4 border-b border-slate-800 bg-slate-800/50 flex items-center justify-between">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Logs</span>
+                <Settings size={14} className="text-slate-500" />
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 font-mono text-[10px] space-y-2">
+                {logs.map((log, i) => (
+                  <div key={i} className={`${log.startsWith('Error') ? 'text-rose-400' : log.startsWith('Success') ? 'text-emerald-400' : 'text-slate-400'}`}>
+                    <span className="opacity-30 mr-2">[{new Date().toLocaleTimeString()}]</span>
+                    {log}
+                  </div>
+                ))}
+                {logs.length === 0 && <div className="text-slate-600 italic">Waiting to start...</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Card */}
+      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800/50 flex gap-4">
+        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+          <AlertCircle size={20} />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-black text-indigo-900 dark:text-indigo-100">Rate Limit Handling</p>
+          <p className="text-xs text-indigo-700/70 dark:text-indigo-300/60 leading-relaxed">
+            This tool automatically handles Gemini API rate limits. If you hit a limit, the process will pause. 
+            You can update your API key in the AI Studio settings and click "Resume" to continue exactly where you left off.
+            Progress is saved automatically in your browser.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};

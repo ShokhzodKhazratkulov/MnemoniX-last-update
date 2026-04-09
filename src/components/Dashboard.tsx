@@ -11,18 +11,20 @@ import {
   Tooltip, 
   ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, Award } from 'lucide-react';
+import { TrendingUp, Award, Upload } from 'lucide-react';
+import { AppView } from '../types';
 
 interface Props {
   savedMnemonics: SavedMnemonic[];
   language: Language;
   onDelete: (id: string) => void;
+  onNavigate: (view: AppView) => void;
   t: any;
   fullT: any;
   profile?: Profile | null;
 }
 
-export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, t, fullT, profile }: Props) => {
+export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNavigate, t, fullT, profile }: Props) => {
   const [showCelebration, setShowCelebration] = useState(false);
 
   const stats = useMemo(() => {
@@ -233,9 +235,19 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, t, fu
       </AnimatePresence>
 
       {/* Header */}
-      <div className="space-y-1">
-        <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tight">{t.title}</h2>
-        <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">{t.stats}</p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tight">{t.title}</h2>
+          <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">{t.stats}</p>
+        </div>
+        
+        <button 
+          onClick={() => onNavigate(AppView.BULK_UPLOAD)}
+          className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-gray-600 dark:text-gray-400 font-black text-sm hover:scale-105 transition-all shadow-sm active:scale-95 group"
+        >
+          <Upload size={18} className="group-hover:text-indigo-600 transition-colors" />
+          Bulk Upload
+        </button>
       </div>
 
       {/* Stats Grid */}
