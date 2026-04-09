@@ -13,7 +13,6 @@ import {
   LogOut,
   Loader2,
   AlertCircle,
-  Menu,
   X,
   ChevronRight,
   ChevronLeft,
@@ -26,7 +25,8 @@ import {
   Instagram,
   Send,
   Mail,
-  Phone
+  Phone,
+  MoreVertical
 } from 'lucide-react';
 
 import { Language, AppState, AppView, MnemonicResponse, SavedMnemonic, Post } from './types';
@@ -994,13 +994,14 @@ export default function App() {
               <div className="relative">
                 <button 
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  data-tour="profile"
                   className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${
                     isMenuOpen 
                       ? 'bg-indigo-600 text-white' 
                       : 'bg-white/80 dark:bg-slate-900/80 border border-gray-100 dark:border-slate-800 text-gray-500 dark:text-gray-400'
                   } shadow-sm`}
                 >
-                  {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                  {isMenuOpen ? <X size={20} /> : <MoreVertical size={20} />}
                 </button>
 
                   <AnimatePresence>
