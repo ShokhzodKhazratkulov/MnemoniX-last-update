@@ -264,7 +264,7 @@ export default function App() {
         if (!data.is_personalized && view !== AppView.PERSONALIZATION) {
           setView(AppView.PERSONALIZATION);
         } else if (data.is_personalized && !data.has_completed_tour && view !== AppView.PERSONALIZATION) {
-          setShowTour(true);
+          // setShowTour(true); // Disabled for now
         }
       } else {
         // Create profile if not exists
@@ -577,9 +577,11 @@ export default function App() {
             data: mnemonicData,
             image_url: img,
             audio_url: audio,
+            pronunciation_url: audio,
             language: contentLanguage,
             keyword: mnemonicData.phoneticLink,
-            story: mnemonicData.imagination
+            story: mnemonicData.imagination,
+            category: mnemonicData.category
           }).select().limit(1);
           
           const newMnemonic = newMnemonicList?.[0];
@@ -1187,7 +1189,7 @@ export default function App() {
                   setLanguage(settings.preferred_language);
                   fetchProfile(user.id);
                   setView(AppView.HOME);
-                  setShowTour(true);
+                  // setShowTour(true); // Disabled for now
                 }} 
               />
             </motion.div>
@@ -1511,6 +1513,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Quick Tour - Disabled for now
       {showTour && (
         <QuickTour 
           onComplete={handleTourComplete}
@@ -1520,6 +1523,7 @@ export default function App() {
           onNavigate={navigateTo}
         />
       )}
+      */}
     </div>
   );
 }

@@ -90,87 +90,134 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
 
     try {
       // 1. Check if word already exists for this language
-      const { data: existing } = await supabase
+      const { data: existing, error: checkError } = await supabase
         .from('mnemonics')
         .select('id')
-        .eq('word', wordProgress.word.toLowerCase())
+        .eq('word', wordProgress.word.toLowerCase().trim())
         .eq('language', targetLanguage)
-        .single();
+        .maybeSingle();
+
+      if (checkError) {
+        addLog(`Check error for "${wordProgress.word}": ${checkError.message}`);
+      }
 
       if (existing) {
-        addLog(`Word "${wordProgress.word}" already exists in DB. Skipping AI generation.`);
+        addLog(`Word "${wordProgress.word}" already exists in DB. Skipping.`);
         setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
         return;
       }
 
       // 2. Generate Mnemonic
       const mnemonicData = await gemini.getMnemonic(wordProgress.word, targetLanguage);
+      const normalizedWord = mnemonicData.word.toLowerCase().trim();
+
+      // Double check with normalized word from AI
+      if (normalizedWord !== wordProgress.word.toLowerCase().trim()) {
+        const { data: existingNormalized } = await supabase
+          .from('mnemonics')
+          .select('id')
+          .eq('word', normalizedWord)
+          .eq('language', targetLanguage)
+          .maybeSingle();
+        
+        if (existingNormalized) {
+          addLog(`AI corrected word "${normalizedWord}" already exists. Skipping.`);
+          setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
+          return;
+        }
+      }
       
       // 3. Generate Image
-      const base64Image = await gemini.generateImage(mnemonicData.imagePrompt);
       let storedImageUrl = '';
-      
-      if (base64Image) {
-        const imageBlob = await (await fetch(base64Image)).blob();
-        const options = {
-          maxSizeMB: 0.2,
-          maxWidthOrHeight: 1024,
-          useWebWorker: true,
-          fileType: 'image/webp'
-        };
-        const compressedFile = await imageCompression(imageBlob as File, options);
-        const fileName = `${mnemonicData.word}-${targetLanguage}-${Date.now()}.webp`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('mnemonic_assets')
-          .upload(`mnemonics/${fileName}`, compressedFile);
-        
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
+      try {
+        const base64Image = await gemini.generateImage(mnemonicData.imagePrompt);
+        if (base64Image) {
+          const response = await fetch(base64Image);
+          const imageBlob = await response.blob();
+          const options = {
+            maxSizeMB: 0.2,
+            maxWidthOrHeight: 1024,
+            useWebWorker: true,
+            fileType: 'image/webp'
+          };
+          const compressedFile = await imageCompression(imageBlob as File, options);
+          const fileName = `${normalizedWord}-${targetLanguage}-${Date.now()}.webp`;
+          
+          const { error: uploadError } = await supabase.storage
             .from('mnemonic_assets')
-            .getPublicUrl(`mnemonics/${fileName}`);
-          storedImageUrl = publicUrl;
+            .upload(`mnemonics/${fileName}`, compressedFile);
+          
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('mnemonic_assets')
+              .getPublicUrl(`mnemonics/${fileName}`);
+            storedImageUrl = publicUrl;
+          } else {
+            addLog(`Image upload failed for ${normalizedWord}: ${uploadError.message}`);
+          }
         }
+      } catch (imgErr) {
+        addLog(`Image generation failed for ${normalizedWord}, continuing without image.`);
+        console.error("Image error:", imgErr);
       }
 
       // 4. Generate TTS
-      const audioBase64 = await gemini.generateTTS(
-        `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.connectorSentence}`,
-        targetLanguage
-      );
-      
       let storedAudioUrl = '';
-      if (audioBase64) {
-        const audioBlob = await (await fetch(`data:audio/mp3;base64,${audioBase64}`)).blob();
-        const audioFileName = `${mnemonicData.word}-${targetLanguage}-${Date.now()}.mp3`;
+      try {
+        const audioBase64 = await gemini.generateTTS(
+          `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.connectorSentence}`,
+          targetLanguage
+        );
         
-        const { error: audioUploadError } = await supabase.storage
-          .from('mnemonic_assets')
-          .upload(`audio/${audioFileName}`, audioBlob);
-        
-        if (!audioUploadError) {
-          const { data: { publicUrl } } = supabase.storage
+        if (audioBase64) {
+          const audioBlob = await (await fetch(`data:audio/mp3;base64,${audioBase64}`)).blob();
+          const audioFileName = `${normalizedWord}-${targetLanguage}-${Date.now()}.mp3`;
+          
+          const { error: audioUploadError } = await supabase.storage
             .from('mnemonic_assets')
-            .getPublicUrl(`audio/${audioFileName}`);
-          storedAudioUrl = publicUrl;
+            .upload(`audio/${audioFileName}`, audioBlob);
+          
+          if (!audioUploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('mnemonic_assets')
+              .getPublicUrl(`audio/${audioFileName}`);
+            storedAudioUrl = publicUrl;
+          } else {
+            addLog(`Audio upload failed for ${normalizedWord}: ${audioUploadError.message}`);
+          }
         }
+      } catch (audioErr) {
+        addLog(`Audio generation failed for ${normalizedWord}, continuing without audio.`);
+        console.error("Audio error:", audioErr);
       }
 
       // 5. Save to Database
       const { error: dbError } = await supabase
         .from('mnemonics')
         .insert({
-          word: mnemonicData.word.toLowerCase(),
+          word: normalizedWord,
           language: targetLanguage,
           data: mnemonicData,
           image_url: storedImageUrl,
-          audio_url: storedAudioUrl
+          audio_url: storedAudioUrl,
+          pronunciation_url: storedAudioUrl,
+          keyword: mnemonicData.phoneticLink,
+          story: mnemonicData.imagination,
+          category: mnemonicData.category
         });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        // Handle duplicate key error gracefully
+        if (dbError.code === '23505') {
+          addLog(`Word "${normalizedWord}" was inserted by another process or already exists. Marking as completed.`);
+          setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
+          return;
+        }
+        throw dbError;
+      }
 
       setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
-      addLog(`Success: ${wordProgress.word}`);
+      addLog(`Success: ${normalizedWord}`);
 
     } catch (error: any) {
       console.error(`Error processing ${wordProgress.word}:`, error);
