@@ -243,7 +243,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
     if (!user) {
       return (
         <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-8">
-          <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mx-auto text-indigo-600">
+          <div className="w-24 h-24 bg-accent/10 dark:bg-accent/20 rounded-full flex items-center justify-center mx-auto text-accent">
             <Award size={48} />
           </div>
           <div className="space-y-4">
@@ -254,7 +254,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
           </div>
           <button 
             onClick={() => onNavigate?.(AppView.AUTH)}
-            className="px-12 py-4 bg-indigo-600 text-white rounded-full font-black text-lg shadow-xl shadow-indigo-500/20 hover:bg-indigo-700 transition-all active:scale-95"
+            className="px-12 py-4 bg-accent text-white rounded-full font-black text-lg shadow-xl shadow-accent/20 hover:bg-accent-hover transition-all active:scale-95"
           >
             {t.signIn || 'Sign In'}
           </button>
@@ -283,26 +283,26 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
               placeholder={t.placeholderWord}
               value={newPost.english_word}
               onChange={(e) => setNewPost({...newPost, english_word: e.target.value})}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white font-bold"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl focus:ring-2 focus:ring-accent text-gray-900 dark:text-white font-bold"
             />
             <input 
               type="text"
               placeholder={t.placeholderKeyword}
               value={newPost.native_keyword}
               onChange={(e) => setNewPost({...newPost, native_keyword: e.target.value})}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white font-bold"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl focus:ring-2 focus:ring-accent text-gray-900 dark:text-white font-bold"
             />
             <textarea 
               placeholder={t.placeholderStory}
               value={newPost.story}
               onChange={(e) => setNewPost({...newPost, story: e.target.value})}
               rows={5}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white font-medium resize-none"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl focus:ring-2 focus:ring-accent text-gray-900 dark:text-white font-medium resize-none"
             />
           </div>
 
-          <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/30">
-            <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium italic leading-relaxed">
+          <div className="p-4 bg-accent/5 dark:bg-accent/10 rounded-2xl border border-accent/10 dark:border-white/10">
+            <p className="text-xs text-accent dark:text-accent font-medium italic leading-relaxed">
               {t.researchNote}
             </p>
           </div>
@@ -312,7 +312,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="p-2 text-gray-400 hover:text-indigo-600 transition-colors disabled:opacity-50"
+                className="p-2 text-gray-400 hover:text-accent transition-colors disabled:opacity-50"
               >
                 {isUploading ? <Loader2 className="animate-spin" size={24} /> : <ImageIcon size={24} />}
               </button>
@@ -339,7 +339,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
               <button 
                 onClick={handleCreatePost}
                 disabled={!newPost.english_word || !newPost.native_keyword || !newPost.story}
-                className="px-12 py-3 bg-indigo-600 text-white rounded-full font-bold text-base shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95"
+                className="px-12 py-3 bg-accent text-white rounded-full font-bold text-base shadow-lg shadow-accent/20 hover:bg-accent-hover disabled:opacity-50 transition-all active:scale-95"
               >
                 {editingPostId ? (t.save || 'Save') : t.post}
               </button>
@@ -353,7 +353,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-20 px-4 sm:px-0 pt-4">
       {/* Search Bar Redesign */}
-      <div className="relative flex items-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-full p-1.5 shadow-lg group focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+      <div className="relative flex items-center bg-white dark:bg-primary border border-gray-100 dark:border-white/10 rounded-full p-1.5 shadow-lg group focus-within:ring-2 focus-within:ring-accent/20 transition-all">
         <div className="flex-1 flex items-center px-4">
           <input 
             type="text"
@@ -364,10 +364,10 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
           />
         </div>
         <div className="flex items-center gap-1">
-          <button className="p-3 text-gray-400 hover:text-indigo-500 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition-all">
+          <button className="p-3 text-gray-400 hover:text-accent hover:bg-gray-50 dark:hover:bg-white/10 rounded-full transition-all">
             <Mic size={20} />
           </button>
-          <button className="p-3 bg-indigo-600 text-white rounded-full shadow-lg shadow-indigo-500/40 hover:bg-indigo-700 transition-all active:scale-90">
+          <button className="p-3 bg-accent text-white rounded-full shadow-lg shadow-accent/40 hover:bg-accent-hover transition-all active:scale-90">
             <Search size={20} />
           </button>
         </div>
@@ -379,7 +379,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
         </h2>
         <button 
           onClick={() => onNavigate?.(AppView.CREATE_POST)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-full font-bold text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all active:scale-95"
+          className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-full font-bold text-sm shadow-lg shadow-accent/20 hover:bg-accent-hover transition-all active:scale-95"
         >
           <Plus size={18} />
           {t.create}
@@ -389,7 +389,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
       <div className="space-y-4">
         {contextLoading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
             <p className="text-gray-500 font-bold animate-pulse">{t.loading}</p>
           </div>
         ) : filteredPosts.length > 0 ? (
@@ -428,7 +428,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
             >
               {isFetchingMore ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                  <Loader2 className="w-4 h-4 animate-spin text-accent" />
                   {t.loading}
                 </>
               ) : (
@@ -482,7 +482,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-sm overflow-hidden">
+            <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-white font-black text-sm overflow-hidden">
               {post.post_metadata.avatar_url ? (
                 <img src={post.post_metadata.avatar_url} alt={post.post_metadata.username} className="w-full h-full object-cover" />
               ) : (
@@ -495,7 +495,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
                   {post.post_metadata.username}
                 </h4>
                 {post.remix_data && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[9px] font-black border border-indigo-100 dark:border-indigo-800/50 min-w-0">
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-full text-[9px] font-black border border-accent/10 dark:border-white/10 min-w-0">
                     <RefreshCw size={8} className="shrink-0" />
                     <span className="truncate">
                       {t.remixedFrom} @{post.remix_data.parent_username}
@@ -534,7 +534,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
                     {onSaveToLibrary && !isOwner && (
                       <button 
                         onClick={() => { onSaveToLibrary(post); setShowMenu(false); }}
-                        className="w-full px-4 py-2.5 text-left text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-3 border-b border-gray-50 dark:border-slate-700/50"
+                        className="w-full px-4 py-2.5 text-left text-sm font-bold text-accent dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20 flex items-center gap-3 border-b border-gray-50 dark:border-white/5"
                       >
                         <Plus size={16} />
                         {t.saveToLibrary}
@@ -576,7 +576,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
         {/* Mnemonic Content */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight">
+            <span className="text-2xl sm:text-3xl font-black text-accent dark:text-accent tracking-tight">
               {post.mnemonic_data.english_word}
             </span>
             <span className="text-lg sm:text-xl font-black text-gray-400 dark:text-slate-600 italic">
@@ -599,7 +599,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
                 onClick={() => handleEmoji(e.emoji)}
                 className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl transition-all text-sm font-bold border ${
                   isSelected 
-                    ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400' 
+                    ? 'bg-accent/10 dark:bg-accent/20 border-accent/20 dark:border-white/10 text-accent dark:text-accent' 
                     : 'bg-gray-50 dark:bg-slate-800/50 border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800'
                 }`}
               >
@@ -627,7 +627,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
                 </p>
                 <button 
                   onClick={() => setIsImageRevealed(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 rounded-xl font-black text-xs shadow-xl hover:bg-indigo-50 transition-all active:scale-95"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white text-accent rounded-xl font-black text-xs shadow-xl hover:bg-neutral transition-all active:scale-95"
                 >
                   <Eye size={14} />
                   <span>{t.revealImage}</span>
@@ -649,7 +649,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
             </button>
             <button 
               onClick={handleDislike}
-              className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.engagement.user_disliked ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.engagement.user_disliked ? 'text-accent' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <ThumbsDown size={18} fill={post.engagement.user_disliked ? "currentColor" : "none"} />
               {post.engagement.dislikes}
@@ -657,7 +657,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
             {onRemix && !isOwner && (
               <button 
                 onClick={() => onRemix(post)}
-                className="flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-indigo-600 transition-colors group"
+                className="flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-accent transition-colors group"
                 title={t.remix}
               >
                 <GitBranch size={18} className="group-hover:rotate-12 transition-transform" />

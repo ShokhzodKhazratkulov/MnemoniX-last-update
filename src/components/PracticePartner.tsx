@@ -167,14 +167,14 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
               className="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/20 custom-scrollbar"
             >
               <div className="text-center mb-6 sm:mb-8">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                  <Sparkles className="text-indigo-600" size={32} />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-accent/10 dark:bg-accent/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Sparkles className="text-accent" size={32} />
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white mb-2 sm:mb-4">
                   Choose Practice Level
                 </h3>
                 <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium">
-                  Select the complexity of sentences you want to practice with <span className="text-indigo-600 font-bold">{word}</span>.
+                  Select the complexity of sentences you want to practice with <span className="text-accent font-bold">{word}</span>.
                 </p>
               </div>
 
@@ -208,21 +208,21 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
                   <button
                     key={level.id}
                     onClick={() => handleLevelSelect(level.id)}
-                    className="group relative p-4 sm:p-6 bg-gray-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-2xl sm:rounded-3xl border-2 border-transparent hover:border-indigo-500 transition-all text-left overflow-hidden"
+                    className="group relative p-4 sm:p-6 bg-gray-50 dark:bg-white/5 hover:bg-accent/10 dark:hover:bg-accent/20 rounded-2xl sm:rounded-3xl border-2 border-transparent hover:border-accent transition-all text-left overflow-hidden"
                   >
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-1 sm:mb-2">
-                        <span className="text-lg sm:text-xl font-black text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">
+                        <span className="text-lg sm:text-xl font-black text-gray-900 dark:text-white group-hover:text-accent transition-colors">
                           {level.title}
                         </span>
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-primary flex items-center justify-center shadow-sm group-hover:bg-accent group-hover:text-white transition-all">
                           <ChevronRight size={16} />
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">
                         {level.desc}
                       </p>
-                      <p className="text-[10px] sm:text-xs font-medium text-indigo-600/60 dark:text-indigo-400/60 italic">
+                      <p className="text-[10px] sm:text-xs font-medium text-accent/60 dark:text-accent/60 italic">
                         e.g. "{level.example}"
                       </p>
                     </div>
@@ -252,16 +252,16 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
             </button>
             <div>
               <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="text-indigo-600" size={20} />
+                <Sparkles className="text-accent" size={20} />
                 Practice Partner
                 {selectedLevel && (
-                  <span className="ml-2 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-full">
+                  <span className="ml-2 px-3 py-1 bg-accent/10 dark:bg-accent/20 text-accent text-[10px] font-black uppercase tracking-widest rounded-full">
                     {selectedLevel === 'EasyToHard' ? 'Easy to Hard' : selectedLevel}
                   </span>
                 )}
               </h2>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Word: <span className="text-indigo-600">{word}</span> • {sentencesCount}/5 sentences
+                Word: <span className="text-accent">{word}</span> • {sentencesCount}/5 sentences
               </p>
             </div>
           </div>
@@ -271,7 +271,7 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
               <div 
                 key={step}
                 className={`w-8 h-2 rounded-full transition-all duration-500 ${
-                  step <= sentencesCount ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-slate-800'
+                  step <= sentencesCount ? 'bg-accent' : 'bg-gray-200 dark:bg-white/10'
                 }`}
               />
             ))}
@@ -292,14 +292,14 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
             className={`flex items-start gap-4 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}
           >
             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-              m.role === 'user' ? 'bg-slate-900 text-white' : 'bg-indigo-600 text-white'
+              m.role === 'user' ? 'bg-primary text-white' : 'bg-accent text-white'
             }`}>
               {m.role === 'user' ? <User size={20} /> : <Bot size={20} />}
             </div>
             <div className={`max-w-[85%] sm:max-w-[70%] p-5 rounded-3xl text-base font-medium leading-relaxed shadow-sm ${
               m.role === 'user' 
                 ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-white rounded-tr-none border border-gray-100 dark:border-slate-800' 
-                : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100 rounded-tl-none border border-indigo-100/50 dark:border-indigo-800/30'
+                : 'bg-accent/5 dark:bg-accent/10 text-primary dark:text-neutral rounded-tl-none border border-accent/10 dark:border-white/10'
             }`}>
               {m.text}
             </div>
@@ -327,12 +327,12 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
                   onChange={(e) => setInput(e.target.value)}
                   disabled={isLoading || sentencesCount >= 5}
                   placeholder={sentencesCount >= 5 ? "Mashg'ulot yakunlandi!" : "Write your sentence in English..."}
-                  className="w-full pl-6 pr-14 py-4 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-[2rem] outline-none transition-all font-bold text-gray-900 dark:text-white disabled:opacity-50 shadow-inner"
+                  className="w-full pl-6 pr-14 py-4 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-[2rem] outline-none transition-all font-bold text-gray-900 dark:text-white disabled:opacity-50 shadow-inner"
                 />
                 <button 
                   type="submit"
                   disabled={!input.trim() || isLoading || sentencesCount >= 5}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:scale-90 shadow-lg shadow-indigo-200 dark:shadow-none"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center hover:bg-accent-hover transition-all disabled:opacity-50 disabled:scale-90 shadow-lg shadow-accent/20 dark:shadow-none"
                 >
                   <Send size={20} />
                 </button>
@@ -346,7 +346,7 @@ export const PracticePartner: React.FC<Props> = ({ word, meaning, language, onCl
                   className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
                     isListening 
                       ? 'bg-red-500 text-white animate-pulse' 
-                      : 'bg-indigo-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200'
+                      : 'bg-accent/10 dark:bg-white/5 text-accent dark:text-accent hover:bg-accent/20'
                   }`}
                 >
                   {isListening ? <MicOff size={24} /> : <Mic size={24} />}

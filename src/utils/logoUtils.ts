@@ -17,7 +17,7 @@ export const generateLogoDataUrl = (size: number = 1080): string => {
   const y = (size - rectSize) / 2;
   const radius = rectSize * 0.25;
   
-  ctx.fillStyle = '#4f46e5'; // Indigo-600
+  ctx.fillStyle = '#D97706'; // Accent color
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.lineTo(x + rectSize - radius, y);

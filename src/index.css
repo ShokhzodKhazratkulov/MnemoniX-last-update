@@ -4,26 +4,30 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #2C3E2D;
+  --color-neutral: #F9F7F2;
+  --color-accent: #E67E22;
+  --color-accent-hover: #D35400;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   body {
-    @apply bg-[#f8fafc] text-slate-900 transition-colors duration-300;
+    @apply bg-neutral text-primary transition-colors duration-300;
   }
   .dark body {
-    @apply bg-[#0f172a] text-slate-100;
+    @apply bg-primary text-neutral;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800/20;
+    @apply bg-white/80 dark:bg-primary/80 backdrop-blur-xl border border-white/20 dark:border-white/10;
   }
   
   .glass-card {
-    @apply bg-white/60 dark:bg-slate-900/60 backdrop-blur-lg border border-white/20 dark:border-slate-800/20 rounded-[2.5rem] shadow-xl shadow-indigo-500/5;
+    @apply bg-white/60 dark:bg-primary/60 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-[2.5rem] shadow-xl shadow-accent/5;
   }
   
   .perspective-1000 {

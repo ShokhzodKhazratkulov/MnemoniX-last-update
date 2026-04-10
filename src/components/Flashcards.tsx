@@ -220,7 +220,7 @@ export const Flashcards = React.memo(({
     const { groups, sortedDates } = groupWordsByDate(filtered);
 
     // Draw Logo (Indigo square with white M) - Manual drawing as requested
-    doc.setFillColor(79, 70, 229); // Indigo-600
+    doc.setFillColor(230, 126, 34); // Accent
     doc.roundedRect(20, 12, 15, 15, 4, 4, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
@@ -270,7 +270,7 @@ export const Flashcards = React.memo(({
           textColor: [30, 30, 30],
         },
         headStyles: {
-          fillColor: [79, 70, 229],
+          fillColor: [230, 126, 34],
           textColor: [255, 255, 255],
           fontSize: 13,
           fontStyle: 'bold',
@@ -344,7 +344,7 @@ export const Flashcards = React.memo(({
             {/* Back Button */}
             <button 
               onClick={() => setSelectedWord(null)}
-              className="absolute top-6 left-6 sm:top-8 sm:left-8 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm z-10"
+              className="absolute top-6 left-6 sm:top-8 sm:left-8 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 dark:bg-primary border border-gray-100 dark:border-white/10 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-accent dark:hover:text-accent transition-all shadow-sm z-10"
             >
               <ChevronLeft size={24} />
             </button>
@@ -382,7 +382,7 @@ export const Flashcards = React.memo(({
                   type="date" 
                   value={dateFrom} 
                   onChange={e => setDateFrom(e.target.value)} 
-                  className="date-input w-full pl-2 pr-1 sm:px-8 py-3 sm:py-6 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent rounded-xl sm:rounded-[2rem] outline-none focus:border-indigo-500 font-black text-gray-900 dark:text-white transition-all text-[10px] sm:text-lg" 
+                  className="date-input w-full pl-2 pr-1 sm:px-8 py-3 sm:py-6 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent rounded-xl sm:rounded-[2rem] outline-none focus:border-accent font-black text-gray-900 dark:text-white transition-all text-[10px] sm:text-lg" 
                 />
                 <div className="sm:hidden absolute inset-0 flex items-center pl-2 pointer-events-none opacity-40">
                   {!dateFrom && <span className="text-[10px] font-bold">mm/dd/yyyy</span>}
@@ -396,7 +396,7 @@ export const Flashcards = React.memo(({
                   type="date" 
                   value={dateTo} 
                   onChange={e => setDateTo(e.target.value)} 
-                  className="date-input w-full pl-2 pr-1 sm:px-8 py-3 sm:py-6 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent rounded-xl sm:rounded-[2rem] outline-none focus:border-indigo-500 font-black text-gray-900 dark:text-white transition-all text-[10px] sm:text-lg" 
+                  className="date-input w-full pl-2 pr-1 sm:px-8 py-3 sm:py-6 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent rounded-xl sm:rounded-[2rem] outline-none focus:border-accent font-black text-gray-900 dark:text-white transition-all text-[10px] sm:text-lg" 
                 />
                 <div className="sm:hidden absolute inset-0 flex items-center pl-2 pointer-events-none opacity-40">
                   {!dateTo && <span className="text-[10px] font-bold">mm/dd/yyyy</span>}
@@ -409,7 +409,7 @@ export const Flashcards = React.memo(({
             <button 
               disabled={filtered.length === 0}
               onClick={() => setIsStarted(true)}
-              className="w-full py-6 sm:py-8 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 text-white rounded-2xl sm:rounded-[2rem] font-black text-xl sm:text-3xl shadow-2xl shadow-indigo-500/20 transition-all active:scale-95 transform hover:-translate-y-1"
+              className="w-full py-6 sm:py-8 bg-accent hover:bg-accent-hover disabled:bg-slate-800 text-white rounded-2xl sm:rounded-[2rem] font-black text-xl sm:text-3xl shadow-2xl shadow-accent/20 transition-all active:scale-95 transform hover:-translate-y-1"
             >
               {t.start} <span className="opacity-50 ml-2">({filtered.length})</span>
             </button>
@@ -498,14 +498,14 @@ export const Flashcards = React.memo(({
           {/* Back Side */}
           <div 
             ref={backSideRef}
-            className="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-600 rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-10 flex flex-col justify-start text-center shadow-2xl border-4 border-indigo-500 overflow-y-auto custom-scrollbar"
+            className="absolute inset-0 backface-hidden rotate-y-180 bg-accent rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-10 flex flex-col justify-start text-center shadow-2xl border-4 border-accent-hover overflow-y-auto custom-scrollbar"
           >
             {/* Decorative Top Bar (White Line) */}
             <div className="w-20 h-2 bg-white/30 rounded-full mx-auto mb-8 flex-shrink-0" />
             
             <div className="space-y-6 sm:space-y-10">
               <div className="space-y-1 sm:space-y-2 relative">
-                <span className="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em]">{t.word}</span>
+                <span className="text-neutral/60 text-[10px] font-black uppercase tracking-[0.2em]">{t.word}</span>
                 <div className="flex items-center justify-center gap-4">
                   <h3 className="text-4xl sm:text-5xl font-black text-white tracking-tighter">{current.word}</h3>
                   <button 
@@ -528,23 +528,23 @@ export const Flashcards = React.memo(({
               </div>
               
               <div className="space-y-1 sm:space-y-2">
-                <span className="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em]">{t.meaning}</span>
+                <span className="text-neutral/60 text-[10px] font-black uppercase tracking-[0.2em]">{t.meaning}</span>
                 <p className="text-white font-black text-2xl sm:text-3xl px-2">{current.data.meaning}</p>
               </div>
 
               <div className="space-y-1 sm:space-y-2">
-                 <span className="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em]">{t.mnemonicLink}</span>
-                 <p className="text-indigo-100 font-bold text-sm sm:text-base px-2">{current.data.phoneticLink}</p>
+                 <span className="text-neutral/60 text-[10px] font-black uppercase tracking-[0.2em]">{t.mnemonicLink}</span>
+                 <p className="text-neutral font-bold text-sm sm:text-base px-2">{current.data.phoneticLink}</p>
               </div>
 
               <div className="space-y-3 sm:space-y-4 bg-white/10 rounded-3xl p-6 sm:p-10 backdrop-blur-md border border-white/10">
-                <span className="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em]">{t.imagination}</span>
+                <span className="text-neutral/60 text-[10px] font-black uppercase tracking-[0.2em]">{t.imagination}</span>
                 <p className="text-white/90 text-base sm:text-lg italic leading-relaxed">{current.data.imagination}</p>
               </div>
 
               {current.data.synonyms && current.data.synonyms.length > 0 && (
                 <div className="space-y-1 sm:space-y-2">
-                  <span className="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em]">{t.synonyms}</span>
+                  <span className="text-neutral/60 text-[10px] font-black uppercase tracking-[0.2em]">{t.synonyms}</span>
                   <div className="flex flex-wrap justify-center gap-2">
                     {current.data.synonyms.map((syn, idx) => (
                       <button 
@@ -635,7 +635,7 @@ export const Flashcards = React.memo(({
 
         <button 
           onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
-          className="flex-1 py-3 sm:py-5 bg-gray-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-2xl font-black transition-all disabled:opacity-30 active:scale-95 text-sm sm:text-lg"
+          className="flex-1 py-3 sm:py-5 bg-gray-100 dark:bg-white/10 text-accent dark:text-accent rounded-2xl font-black transition-all disabled:opacity-30 active:scale-95 text-sm sm:text-lg"
           disabled={currentIndex === 0}
         >
           {t.prev}
@@ -650,7 +650,7 @@ export const Flashcards = React.memo(({
               setCurrentIndex(0);
             }
           }}
-          className="flex-[1.5] py-3 sm:py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/20 transition-all active:scale-95 text-sm sm:text-lg"
+          className="flex-[1.5] py-3 sm:py-5 bg-accent text-white rounded-2xl font-black shadow-xl shadow-accent/20 transition-all active:scale-95 text-sm sm:text-lg"
         >
           {currentIndex === filtered.length - 1 ? t.finish : t.next}
         </button>

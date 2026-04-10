@@ -88,7 +88,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
           >
             <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
               {t.searchHeroTitle1}
-              <span className="text-indigo-600 dark:text-indigo-400">
+              <span className="text-accent dark:text-accent">
                 {t.searchHeroTitle2}
               </span>
               {t.searchHeroTitle3}
@@ -104,7 +104,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
       <div className="space-y-8">
         <form 
           onSubmit={handleSearch}
-          className="relative group flex items-center bg-white dark:bg-slate-900/50 backdrop-blur-xl border-2 border-gray-100 dark:border-slate-800 rounded-[2.5rem] shadow-2xl shadow-indigo-100/10 dark:shadow-none focus-within:border-indigo-600/50 focus-within:ring-4 focus-within:ring-indigo-500/5 transition-all p-1.5 sm:p-3 overflow-hidden"
+          className="relative group flex items-center bg-white dark:bg-primary/50 backdrop-blur-xl border-2 border-gray-100 dark:border-white/10 rounded-[2.5rem] shadow-2xl shadow-accent/5 dark:shadow-none focus-within:border-accent/50 focus-within:ring-4 focus-within:ring-accent/5 transition-all p-1.5 sm:p-3 overflow-hidden"
         >
           <input 
             type="text"
@@ -122,7 +122,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               className={`w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl transition-all ${
                 isListening 
                   ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 animate-pulse' 
-                  : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-gray-50/50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800'
+                  : 'text-gray-400 hover:text-accent dark:hover:text-accent bg-gray-50/50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10'
               }`}
               title={t.voiceInput}
             >
@@ -133,7 +133,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
             <button 
               type="submit"
               disabled={state === AppState.LOADING}
-              className={`flex items-center justify-center gap-3 bg-indigo-600 text-white rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-indigo-500/20 hover:bg-indigo-700 transition-all active:scale-95 disabled:bg-gray-300 flex-shrink-0 ${
+              className={`flex items-center justify-center gap-3 bg-accent text-white rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-accent/20 hover:bg-accent-hover transition-all active:scale-95 disabled:bg-gray-300 flex-shrink-0 ${
                 state === AppState.LOADING ? 'w-11 h-11 sm:w-14 sm:h-14' : 'px-4 py-3 sm:px-10 sm:py-5'
               }`}
             >
@@ -169,7 +169,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                     onClick={() => {
                       setSearchQuery(m.word);
                     }}
-                    className="px-5 py-2.5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm truncate"
+                    className="px-5 py-2.5 bg-white dark:bg-primary border border-gray-100 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:border-accent hover:text-accent dark:hover:text-accent transition-all shadow-sm truncate"
                   >
                     {m.word}
                   </button>
@@ -186,7 +186,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12 p-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-500/20 relative overflow-hidden group"
+            className="mb-12 p-8 bg-gradient-to-br from-accent to-accent-hover rounded-[2.5rem] text-white shadow-2xl shadow-accent/20 relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
               <Brain size={120} />
@@ -196,13 +196,13 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 <h3 className="text-3xl font-black tracking-tight leading-tight">
                   {t.syncTitle}
                 </h3>
-                <p className="text-indigo-100 font-medium text-lg">
+                <p className="text-neutral font-medium text-lg">
                   {t.syncSubtitle}
                 </p>
               </div>
               <button 
                 onClick={() => onNavigate(AppView.AUTH)}
-                className="px-8 py-3 bg-white text-indigo-600 rounded-2xl font-black shadow-xl hover:bg-indigo-50 transition-all active:scale-95"
+                className="px-8 py-3 bg-white text-accent rounded-2xl font-black shadow-xl hover:bg-neutral transition-all active:scale-95"
               >
                 {t.signIn || 'Sign In'}
               </button>
@@ -217,10 +217,10 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               {/* Outer Ring */}
               <div className="w-32 h-32 sm:w-48 sm:h-48 border-[6px] border-gray-100 dark:border-slate-800 rounded-full"></div>
               {/* Spinning Progress */}
-              <div className="absolute inset-0 w-32 h-32 sm:w-48 sm:h-48 border-[6px] border-transparent border-t-indigo-600 border-r-indigo-400 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-32 h-32 sm:w-48 sm:h-48 border-[6px] border-transparent border-t-accent border-r-accent-hover rounded-full animate-spin"></div>
               {/* Inner Circle with M */}
-              <div className="absolute w-24 h-24 sm:w-32 sm:h-32 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-full flex items-center justify-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+              <div className="absolute w-24 h-24 sm:w-32 sm:h-32 bg-accent/10 dark:bg-accent/10 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-accent rounded-2xl flex items-center justify-center text-white shadow-lg">
                   <span className="text-3xl sm:text-4xl font-black">M</span>
                 </div>
               </div>
@@ -231,13 +231,13 @@ export const SearchPage: React.FC<SearchPageProps> = ({
                 {loadingMessage || t.loadingStory}
               </p>
               <div className="space-y-3">
-                <p className="text-indigo-600 dark:text-indigo-400 font-black tracking-[0.2em] text-xs sm:text-sm uppercase animate-pulse">
+                <p className="text-accent dark:text-accent font-black tracking-[0.2em] text-xs sm:text-sm uppercase animate-pulse">
                   {mnemonic ? t.creatingImage : (loadingMessage || t.checkingSpelling)}
                 </p>
                 <div className="flex justify-center gap-2">
-                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-indigo-600 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-accent rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-accent rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-accent rounded-full animate-bounce"></div>
                 </div>
               </div>
             </div>

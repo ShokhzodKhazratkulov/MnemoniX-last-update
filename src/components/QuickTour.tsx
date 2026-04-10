@@ -159,7 +159,7 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
               height: targetRect.height + 24,
             }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute border-4 border-indigo-500 rounded-2xl shadow-[0_0_30px_rgba(79,70,229,0.5)]"
+            className="absolute border-4 border-accent rounded-2xl shadow-[0_0_30px_rgba(230,126,34,0.5)]"
           />
         )}
       </AnimatePresence>
@@ -181,7 +181,7 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                <div className="flex items-center gap-2 text-accent dark:text-accent">
                   <Sparkles size={18} />
                   <span className="text-[10px] font-black uppercase tracking-widest">Quick Tour</span>
                 </div>
@@ -208,14 +208,14 @@ export const QuickTour: React.FC<Props> = ({ onComplete, onSkip, t, currentView,
                     <div 
                       key={i}
                       className={`h-1 rounded-full transition-all ${
-                        i === stepIndex ? 'w-4 bg-indigo-600' : 'w-1 bg-gray-200 dark:bg-slate-800'
+                        i === stepIndex ? 'w-4 bg-accent' : 'w-1 bg-gray-200 dark:bg-slate-800'
                       }`}
                     />
                   ))}
                 </div>
                 <button 
                   onClick={handleNext}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-black text-xs hover:bg-indigo-700 transition-all active:scale-95"
+                  className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-xl font-black text-xs hover:bg-accent-hover transition-all active:scale-95"
                 >
                   {stepIndex === steps.length - 1 ? t.finish : t.next}
                   <ChevronRight size={14} />

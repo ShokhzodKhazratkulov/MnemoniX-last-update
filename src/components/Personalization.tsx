@@ -61,7 +61,7 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
           <motion.div 
             initial={{ width: '0%' }}
             animate={{ width: `${(step / 3) * 100}%` }}
-            className="h-full bg-indigo-600"
+            className="h-full bg-accent"
           />
         </div>
 
@@ -72,7 +72,7 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
               animate={{ opacity: 1, x: 0 }}
               className="space-y-6"
             >
-              <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center">
+              <div className="w-16 h-16 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-2xl flex items-center justify-center">
                 <Languages size={32} />
               </div>
               <div className="space-y-2">
@@ -86,8 +86,8 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
                     onClick={() => setSettings({ ...settings, preferred_language: lang })}
                     className={`p-4 rounded-2xl border-2 transition-all font-bold text-left flex items-center justify-between ${
                       settings.preferred_language === lang 
-                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' 
-                        : 'border-gray-100 dark:border-slate-800 text-gray-600 dark:text-gray-400 hover:border-indigo-200'
+                        ? 'border-accent bg-accent/5 dark:bg-accent/10 text-accent dark:text-accent' 
+                        : 'border-gray-100 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-accent/30'
                     }`}
                   >
                     {lang}
@@ -174,7 +174,7 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
             <button 
               onClick={() => step < 3 ? setStep(step + 1) : handleComplete()}
               disabled={isSaving}
-              className="w-full sm:flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:flex-[2] py-4 bg-accent text-white rounded-2xl font-black shadow-xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover transition-all flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -189,7 +189,7 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
         </div>
 
         {/* Decorative Sparkles */}
-        <div className="absolute -bottom-12 -right-12 text-indigo-100 dark:text-indigo-900/20 opacity-50">
+        <div className="absolute -bottom-12 -right-12 text-accent/5 dark:text-accent/10 opacity-50">
           <Sparkles size={200} />
         </div>
       </motion.div>

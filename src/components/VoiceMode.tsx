@@ -305,11 +305,11 @@ export const VoiceMode = React.memo(({ onClose, uiLanguage, contentLanguage }: P
   }, [contentLanguage, t]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-indigo-900/95 backdrop-blur-xl p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/95 backdrop-blur-xl p-4">
       <div className="w-full max-w-lg bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl flex flex-col items-center text-center space-y-8">
         <div className="relative">
-          <div className={`w-32 h-32 rounded-full bg-indigo-500/30 flex items-center justify-center ${isActive ? 'animate-pulse' : ''}`}>
-             <div className={`w-24 h-24 rounded-full bg-indigo-400 flex items-center justify-center transition-transform ${isActive ? 'scale-110' : 'scale-100'}`}>
+          <div className={`w-32 h-32 rounded-full bg-accent/30 flex items-center justify-center ${isActive ? 'animate-pulse' : ''}`}>
+             <div className={`w-24 h-24 rounded-full bg-accent/40 flex items-center justify-center transition-transform ${isActive ? 'scale-110' : 'scale-100'}`}>
                 <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
@@ -319,7 +319,7 @@ export const VoiceMode = React.memo(({ onClose, uiLanguage, contentLanguage }: P
 
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-white">{t.title}</h2>
-          <p className="text-indigo-200">{status}</p>
+          <p className="text-accent/80">{status}</p>
         </div>
 
         <div className="w-full bg-black/20 rounded-2xl p-4 min-h-[150px] text-left space-y-2 text-sm text-gray-300 overflow-y-auto">

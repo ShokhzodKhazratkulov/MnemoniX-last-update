@@ -149,13 +149,13 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
       <div className="text-center space-y-6">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center justify-center gap-4 sm:gap-8">
-            <h1 className="text-4xl sm:text-8xl font-black text-indigo-600 dark:text-indigo-400 tracking-tighter text-center">{safeData.word}</h1>
+            <h1 className="text-4xl sm:text-8xl font-black text-accent dark:text-accent tracking-tighter text-center">{safeData.word}</h1>
             <div className="flex flex-col items-center gap-2">
               <button 
                 onClick={() => handlePlayAudio()}
                 disabled={isAudioLoading}
                 className={`group relative w-12 h-12 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all shadow-xl ${
-                  isPlaying ? 'bg-red-500 text-white animate-pulse' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  isPlaying ? 'bg-red-500 text-white animate-pulse' : 'bg-accent text-white hover:bg-accent-hover'
                 } disabled:bg-gray-100 dark:disabled:bg-slate-900 flex-shrink-0`}
                 title="Listen to Mnemonic Story"
               >
@@ -172,7 +172,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
                 )}
                 
                 {/* Tooltip-like label */}
-                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden sm:block">
+                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest text-accent opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden sm:block">
                   {t.listenStory}
                 </span>
               </button>
@@ -191,7 +191,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
                 onClick={() => handlePlayAudio(safeData.word)}
                 disabled={isAudioLoading}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                  isPlaying ? 'text-red-500' : 'text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800'
+                  isPlaying ? 'text-red-500' : 'text-accent/60 hover:text-accent hover:bg-accent/10 dark:hover:bg-white/5'
                 } disabled:opacity-50`}
                 title="Pronounce word"
               >
@@ -204,7 +204,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
           </p>
         </div>
         
-        <div className="inline-block px-6 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl text-sm font-black uppercase tracking-widest border border-indigo-100/50 dark:border-indigo-800/30">
+        <div className="inline-block px-6 py-2 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-2xl text-sm font-black uppercase tracking-widest border border-accent/20 dark:border-white/10">
           {safeData.morphology}
         </div>
       </div>
@@ -225,7 +225,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
                 </p>
                 <button 
                   onClick={() => setIsImageRevealed(true)}
-                  className="inline-flex items-center gap-2 sm:gap-3 px-4 py-2 sm:px-8 sm:py-4 bg-white text-indigo-600 rounded-xl sm:rounded-2xl font-black text-xs sm:text-lg shadow-2xl hover:bg-indigo-50 transition-all active:scale-95"
+                  className="inline-flex items-center gap-2 sm:gap-3 px-4 py-2 sm:px-8 sm:py-4 bg-white text-accent rounded-xl sm:rounded-2xl font-black text-xs sm:text-lg shadow-2xl hover:bg-neutral transition-all active:scale-95"
                 >
                   <Eye size={16} className="sm:w-6 sm:h-6" />
                   <span>{revealText}</span>
@@ -254,14 +254,14 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
             </h3>
             <p className="text-gray-800 dark:text-gray-200 text-lg font-medium italic">{safeData.phoneticLink}</p>
           </div>
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-lg border-l-8 border-indigo-500 transition-transform hover:scale-[1.01]">
-            <h3 className="text-indigo-600 dark:text-indigo-400 font-bold uppercase text-[10px] tracking-widest mb-2 opacity-60">
+          <div className="bg-white dark:bg-primary/50 p-6 rounded-2xl shadow-lg border-l-8 border-accent transition-transform hover:scale-[1.01]">
+            <h3 className="text-accent dark:text-accent font-bold uppercase text-[10px] tracking-widest mb-2 opacity-60">
               {t.imagination}
             </h3>
             <p className="text-gray-800 dark:text-gray-200 text-lg leading-relaxed">{safeData.imagination}</p>
           </div>
-          <div className="bg-indigo-600 p-4 sm:p-6 rounded-2xl shadow-xl text-white transition-transform hover:scale-[1.02]">
-             <h3 className="text-indigo-200 font-bold uppercase text-[10px] tracking-widest mb-2 opacity-80">
+          <div className="bg-accent p-4 sm:p-6 rounded-2xl shadow-xl text-white transition-transform hover:scale-[1.02]">
+             <h3 className="text-neutral font-bold uppercase text-[10px] tracking-widest mb-2 opacity-80">
                {t.mnemonicKey}
              </h3>
             <p className="text-lg sm:text-xl font-semibold italic">"{safeData.connectorSentence}"</p>
@@ -275,7 +275,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
                  <button 
                    key={idx} 
                    onClick={() => handleSynonymClick(syn)}
-                   className="px-3 py-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition-all"
+                   className="px-3 py-1 bg-white dark:bg-primary border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-accent hover:text-accent transition-all"
                  >
                    {syn}
                  </button>
@@ -289,7 +289,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
              <ul className="space-y-3">
                {safeData.examples.map((ex, idx) => (
                  <li key={idx} className="text-gray-700 dark:text-gray-300 italic flex gap-3">
-                   <span className="text-indigo-400 font-bold">•</span>
+                   <span className="text-accent/40 font-bold">•</span>
                    {ex}
                  </li>
                ))}

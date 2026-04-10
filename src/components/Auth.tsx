@@ -68,11 +68,11 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
   return (
     <div className="h-screen bg-white dark:bg-black flex flex-col lg:flex-row overflow-hidden">
       {/* Left Pane - Editorial Content */}
-      <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 p-12 flex-col justify-between relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-accent p-12 flex-col justify-between relative overflow-hidden">
         <div className="relative z-10">
           <div className="flex items-center gap-2 text-white/80 mb-8">
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-              <span className="text-indigo-600 font-black text-xl">M</span>
+              <span className="text-accent font-black text-xl">M</span>
             </div>
             <span className="font-black tracking-tighter text-xl">MNEMONIX</span>
           </div>
@@ -86,7 +86,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
             ))}
           </h1>
           
-          <p className="text-indigo-100 text-xl font-medium max-w-md leading-relaxed">
+          <p className="text-neutral text-xl font-medium max-w-md leading-relaxed">
             {t.authHeroSubtitle}
           </p>
         </div>
@@ -94,19 +94,19 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
         <div className="relative z-10 flex items-center gap-8">
           <div className="flex -space-x-4">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="w-12 h-12 rounded-full border-4 border-indigo-600 bg-indigo-400 overflow-hidden">
+              <div key={i} className="w-12 h-12 rounded-full border-4 border-accent bg-accent/40 overflow-hidden">
                 <img src={`https://picsum.photos/seed/user${i}/100/100`} alt="User" referrerPolicy="no-referrer" />
               </div>
             ))}
           </div>
-          <p className="text-indigo-100 font-bold text-sm uppercase tracking-widest">
+          <p className="text-neutral font-bold text-sm uppercase tracking-widest">
             {t.activeLearners}
           </p>
         </div>
 
         {/* Decorative Elements */}
         <div className="absolute top-[-10%] right-[-10%] w-[60%] aspect-square bg-white/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[80%] aspect-square bg-indigo-400/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[80%] aspect-square bg-accent/20 rounded-full blur-3xl" />
       </div>
 
       {/* Right Pane - Auth Form */}
@@ -126,7 +126,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
               onClick={() => handleOAuth('google')}
               className="flex items-center justify-center gap-3 py-3 border-2 border-gray-100 dark:border-slate-800 rounded-2xl font-black text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-900 transition-all shadow-sm w-full"
             >
-              <Chrome size={20} className="text-indigo-600" />
+              <Chrome size={20} className="text-accent" />
               {t.continueWithGoogle}
             </button>
           </div>
@@ -149,7 +149,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white text-sm"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white text-sm"
                   placeholder="name@example.com"
                   required
                 />
@@ -164,7 +164,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white text-sm"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white text-sm"
                   placeholder="••••••••"
                   required
                 />
@@ -196,7 +196,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-2xl shadow-indigo-500/40 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-base"
+              className="w-full py-4 bg-accent text-white rounded-2xl font-black shadow-2xl shadow-accent/40 hover:bg-accent-hover hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-base"
             >
               {loading ? <Loader2 className="animate-spin" size={20} /> : (isSignUp ? t.signUp : t.signIn)}
             </button>
@@ -210,7 +210,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess, t }) => {
                 setError(null);
                 setMessage(null);
               }}
-              className="text-indigo-600 dark:text-indigo-400 font-black hover:underline ml-1"
+              className="text-accent dark:text-accent font-black hover:underline ml-1"
             >
               {isSignUp ? t.signIn : t.joinMnemonix}
             </button>

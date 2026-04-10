@@ -215,7 +215,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
         animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-8"
       >
-        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-indigo-200 dark:shadow-none overflow-hidden">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-accent rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-accent/20 dark:shadow-none overflow-hidden">
           {editForm.avatar_url ? (
             <img src={editForm.avatar_url} alt="Profile" className="w-full h-full object-cover" />
           ) : (
@@ -231,7 +231,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
             {user ? `${t.joined} ${joinDate}` : t.guestSession}
           </p>
           <div className="flex flex-wrap justify-center sm:justify-start gap-3 mt-4">
-            <span className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-sm font-bold border border-indigo-100 dark:border-indigo-800">
+            <span className="px-4 py-1.5 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-full text-sm font-bold border border-accent/20 dark:border-white/10">
               {user?.email || t.noAccount}
             </span>
             {!user && window.location.hostname === 'mnemonix.io' && (
@@ -319,7 +319,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
             className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group"
           >
             <div className="flex items-center gap-6">
-              <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <MessageSquare size={28} />
               </div>
               <div className="text-left">
@@ -336,7 +336,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
             className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group"
           >
             <div className="flex items-center gap-6">
-              <div className="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Award size={28} />
               </div>
               <div className="text-left">
@@ -391,15 +391,15 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
           ) : (
             <button 
               onClick={onSignIn}
-              className="w-full p-6 flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors group cursor-pointer"
+              className="w-full p-6 flex items-center justify-between hover:bg-accent/5 dark:hover:bg-accent/10 transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600">
+                <div className="w-10 h-10 bg-accent/10 dark:bg-accent/20 rounded-xl flex items-center justify-center text-accent">
                   <LogOut size={20} />
                 </div>
-                <span className="font-bold text-indigo-600 dark:text-indigo-400">{t.signIn}</span>
+                <span className="font-bold text-accent dark:text-accent">{t.signIn}</span>
               </div>
-              <ChevronRight className="text-indigo-200 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="text-accent/30 group-hover:translate-x-1 transition-transform" />
             </button>
           )}
         </div>
@@ -448,7 +448,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                       </div>
                     ) : (
                       (activeModal === 'searched' ? savedMnemonics : savedMnemonics.filter(m => m.isMastered)).map((m) => (
-                        <div key={m.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-transparent hover:border-indigo-500 transition-all group">
+                        <div key={m.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-accent transition-all group">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
                               <img src={m.imageUrl} alt={m.word} className="w-full h-full object-cover" />
@@ -469,7 +469,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                     {/* Avatar Upload */}
                     <div className="flex flex-col items-center gap-4">
                       <div className="relative group">
-                        <div className="w-24 h-24 rounded-3xl overflow-hidden bg-indigo-600 flex items-center justify-center text-white shadow-xl">
+                        <div className="w-24 h-24 rounded-3xl overflow-hidden bg-accent flex items-center justify-center text-white shadow-xl">
                           {editForm.avatar_url ? (
                             <img src={editForm.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                           ) : (
@@ -477,7 +477,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                           )}
                         </div>
                         <label className="absolute -bottom-2 -right-2 p-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-100 dark:border-slate-700 cursor-pointer hover:scale-110 transition-transform">
-                          <Camera size={18} className="text-indigo-600" />
+                          <Camera size={18} className="text-accent" />
                           <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                         </label>
                       </div>
@@ -493,7 +493,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                               type="text" 
                               value={editForm.username}
                               onChange={(e) => setEditForm({...editForm, username: e.target.value})}
-                              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                               placeholder={t.username}
                             />
                           </div>
@@ -507,7 +507,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                               type="text" 
                               value={editForm.full_name}
                               onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
-                              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                               placeholder={t.fullName}
                             />
                           </div>
@@ -518,7 +518,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                           <select 
                             value={editForm.preferred_language}
                             onChange={(e) => setEditForm({...editForm, preferred_language: e.target.value as Language})}
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                           >
                             {Object.values(Language).filter(l => l !== Language.ENGLISH).map((l) => (
                               <option key={l} value={l}>{l}</option>
@@ -535,7 +535,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                               setEditForm({...editForm, ui_language: newLang});
                               if (onLanguageChange) onLanguageChange(newLang);
                             }}
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                           >
                             {Object.values(Language).map((l) => (
                               <option key={l} value={l}>{l}</option>
@@ -550,7 +550,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                               type="number" 
                               value={editForm.daily_goal}
                               onChange={(e) => setEditForm({...editForm, daily_goal: parseInt(e.target.value)})}
-                              className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                              className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -558,7 +558,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                             <select 
                               value={editForm.ielts_goal}
                               onChange={(e) => setEditForm({...editForm, ielts_goal: parseFloat(e.target.value)})}
-                              className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                              className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
                             >
                               {[6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0].map((score) => (
                                 <option key={score} value={score}>{score % 1 === 0 ? `${score}.0` : score}</option>
@@ -571,7 +571,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                     <button 
                       type="submit"
                       disabled={isUpdating}
-                      className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                      className="w-full py-4 bg-accent text-white rounded-2xl font-black text-lg shadow-xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                     >
                       {isUpdating ? <Loader2 className="animate-spin" /> : <Save size={20} />}
                       {t.save}

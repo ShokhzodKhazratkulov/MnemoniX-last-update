@@ -306,7 +306,7 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Enter words separated by new lines or commas (e.g. apple, banana, cherry...)"
-              className="w-full h-64 p-6 bg-gray-50 dark:bg-slate-800/50 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-3xl focus:border-indigo-500 focus:ring-0 transition-all font-mono text-sm resize-none"
+              className="w-full h-64 p-6 bg-gray-50 dark:bg-white/5 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-3xl focus:border-accent focus:ring-0 transition-all font-mono text-sm resize-none"
             />
           </div>
 
@@ -329,7 +329,7 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
             <button 
               onClick={handleParse}
               disabled={!inputText.trim()}
-              className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-accent text-white rounded-2xl font-black shadow-xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Upload size={20} />
               Parse Words
@@ -381,7 +381,7 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
-                  className="h-full bg-indigo-600"
+                  className="h-full bg-accent"
                 />
               </div>
               <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -393,10 +393,10 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
 
             {/* Current Word Status */}
             {isProcessing && words[currentIndex] && (
-              <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-4">
-                <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+              <div className="p-4 bg-accent/10 dark:bg-accent/20 rounded-2xl border border-accent/20 dark:border-white/10 flex items-center gap-4">
+                <Loader2 className="w-6 h-6 text-accent animate-spin" />
                 <div>
-                  <p className="text-xs font-black text-indigo-600 uppercase tracking-widest">Now Generating</p>
+                  <p className="text-xs font-black text-accent uppercase tracking-widest">Now Generating</p>
                   <p className="text-lg font-black text-gray-900 dark:text-white">{words[currentIndex].word}</p>
                 </div>
               </div>
@@ -416,7 +416,7 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
                   <div 
                     key={i}
                     className={`flex items-center justify-between p-3 rounded-xl text-sm font-bold ${
-                      i === currentIndex && isProcessing ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 
+                      i === currentIndex && isProcessing ? 'bg-accent/10 dark:bg-accent/20 text-accent' : 
                       w.status === 'completed' ? 'text-emerald-600' :
                       w.status === 'error' ? 'text-rose-600' :
                       'text-gray-500'
@@ -455,13 +455,13 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
       )}
 
       {/* Info Card */}
-      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800/50 flex gap-4">
-        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+      <div className="bg-accent/10 dark:bg-accent/20 p-6 rounded-3xl border border-accent/20 dark:border-white/10 flex gap-4">
+        <div className="w-10 h-10 bg-accent/20 dark:bg-accent/30 rounded-xl flex items-center justify-center text-accent dark:text-accent flex-shrink-0">
           <AlertCircle size={20} />
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-black text-indigo-900 dark:text-indigo-100">Rate Limit Handling</p>
-          <p className="text-xs text-indigo-700/70 dark:text-indigo-300/60 leading-relaxed">
+          <p className="text-sm font-black text-accent dark:text-neutral">Rate Limit Handling</p>
+          <p className="text-xs text-accent/70 dark:text-neutral/60 leading-relaxed">
             This tool automatically handles Gemini API rate limits. If you hit a limit, the process will pause. 
             You can update your API key in the AI Studio settings and click "Resume" to continue exactly where you left off.
             Progress is saved automatically in your browser.

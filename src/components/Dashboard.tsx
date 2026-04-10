@@ -141,7 +141,7 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
                   delay: Math.random() * 5
                 }}
                 className={`absolute w-2 h-2 sm:w-4 sm:h-4 rounded-sm ${
-                  ['bg-emerald-400', 'bg-indigo-400', 'bg-amber-400', 'bg-rose-400', 'bg-sky-400', 'bg-violet-400'][i % 6]
+                  ['bg-emerald-400', 'bg-accent', 'bg-amber-400', 'bg-rose-400', 'bg-sky-400', 'bg-neutral'][i % 6]
                 }`}
               />
             ))}
@@ -182,7 +182,7 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
                   opacity: [0.3, 0.6, 0.3]
                 }}
                 transition={{ duration: 4, repeat: Infinity }}
-                className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-transparent to-indigo-500/20 pointer-events-none"
+                className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-transparent to-accent/20 pointer-events-none"
               />
               
               <div className="relative z-10">
@@ -245,7 +245,7 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
           onClick={() => onNavigate(AppView.BULK_UPLOAD)}
           className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-gray-600 dark:text-gray-400 font-black text-sm hover:scale-105 transition-all shadow-sm active:scale-95 group"
         >
-          <Upload size={18} className="group-hover:text-indigo-600 transition-colors" />
+          <Upload size={18} className="group-hover:text-accent transition-colors" />
           Bulk Upload
         </button>
       </div>
@@ -253,9 +253,9 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Total Learned */}
-        <div className="bg-indigo-600 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-indigo-500/20 flex flex-col items-center justify-center text-center space-y-2 transform hover:scale-105 transition-transform duration-300">
+        <div className="bg-accent p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-accent/20 flex flex-col items-center justify-center text-center space-y-2 transform hover:scale-105 transition-transform duration-300">
           <span className="text-4xl sm:text-5xl lg:text-7xl font-black text-white">{stats.totalCount}</span>
-          <span className="text-indigo-100 font-black text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase leading-tight">{t.total}</span>
+          <span className="text-neutral font-black text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase leading-tight">{t.total}</span>
         </div>
 
         {/* Today's Count / Goal */}
@@ -277,7 +277,7 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
 
         {/* Word Level */}
         <div className="bg-white dark:bg-slate-900/50 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 dark:border-slate-800 flex flex-col items-center justify-center text-center space-y-2 transform hover:scale-105 transition-transform duration-300 overflow-hidden">
-          <span className="text-lg sm:text-xl lg:text-2xl font-black text-indigo-500 dark:text-indigo-400 tracking-tight whitespace-nowrap">{stats.level}</span>
+          <span className="text-lg sm:text-xl lg:text-2xl font-black text-accent dark:text-accent tracking-tight whitespace-nowrap">{stats.level}</span>
           <span className="text-gray-400 dark:text-gray-500 font-black text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase leading-tight">{t.level}</span>
         </div>
       </div>
@@ -288,20 +288,20 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
           <div className="flex items-center gap-2 sm:gap-3 text-amber-500">
             <Award className="w-5 h-5 sm:w-6 sm:h-6" />
             <h3 className="text-sm sm:text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">{t.ieltsRoadmap}</h3>
-            <span className="sm:hidden text-lg font-black text-indigo-600 dark:text-indigo-400 ml-2">{Math.round(stats.ieltsProgress)}%</span>
+            <span className="sm:hidden text-lg font-black text-accent dark:text-accent ml-2">{Math.round(stats.ieltsProgress)}%</span>
           </div>
           <div className="hidden sm:block text-right">
-            <div className="text-2xl sm:text-4xl font-black text-indigo-600 dark:text-indigo-400">{Math.round(stats.ieltsProgress)}%</div>
+            <div className="text-2xl sm:text-4xl font-black text-accent dark:text-accent">{Math.round(stats.ieltsProgress)}%</div>
             <div className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">{t.progressLabel}</div>
           </div>
         </div>
 
         <div className="space-y-3 sm:space-y-6">
-          <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{t.goal}: <span className="text-indigo-600 dark:text-indigo-400 font-black">{profile?.ielts_goal ? (profile.ielts_goal % 1 === 0 ? `${profile.ielts_goal}.0` : profile.ielts_goal) : '7.0'} {t.bandScore}</span></p>
+          <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{t.goal}: <span className="text-accent dark:text-accent font-black">{profile?.ielts_goal ? (profile.ielts_goal % 1 === 0 ? `${profile.ielts_goal}.0` : profile.ielts_goal) : '7.0'} {t.bandScore}</span></p>
           
           <div className="relative h-3 sm:h-6 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div 
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-600 to-indigo-400 transition-all duration-1000 ease-out"
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-accent to-accent-hover transition-all duration-1000 ease-out"
               style={{ width: `${stats.ieltsProgress}%` }}
             />
             {/* Markers */}
@@ -314,7 +314,7 @@ export const Dashboard = React.memo(({ savedMnemonics, language, onDelete, onNav
           
           <div className="flex justify-between items-center text-[8px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">
             <span>0 {t.words}</span>
-            <div className="flex items-center gap-1 sm:gap-2 text-indigo-600 dark:text-indigo-400">
+            <div className="flex items-center gap-1 sm:gap-2 text-accent dark:text-accent">
               <TrendingUp size={10} className="sm:w-3.5 sm:h-3.5" />
               <span>{stats.totalCount} {t.learned}</span>
             </div>

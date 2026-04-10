@@ -49,7 +49,7 @@ export const FeedbackModal: React.FC<Props> = ({ onClose, language, receiverEmai
               type="text" 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-bold text-gray-800 transition-all"
+              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-accent rounded-2xl outline-none font-bold text-gray-800 transition-all"
             />
           </div>
 
@@ -60,7 +60,7 @@ export const FeedbackModal: React.FC<Props> = ({ onClose, language, receiverEmai
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl outline-none font-bold text-gray-800 transition-all resize-none"
+              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-accent rounded-2xl outline-none font-bold text-gray-800 transition-all resize-none"
             ></textarea>
           </div>
 
@@ -74,7 +74,7 @@ export const FeedbackModal: React.FC<Props> = ({ onClose, language, receiverEmai
             </button>
             <button 
               type="submit"
-              className="flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-colors active:scale-95"
+              className="flex-[2] py-4 bg-accent text-white rounded-2xl font-black shadow-xl shadow-accent/20 hover:bg-accent-hover transition-colors active:scale-95"
             >
               {t.btnSend}
             </button>

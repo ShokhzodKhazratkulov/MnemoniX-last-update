@@ -48,7 +48,7 @@ export const CategoryDetailPage: React.FC<Props> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-white dark:bg-slate-900 p-4 rounded-[2rem] shadow-lg border border-gray-100 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-500 transition-all text-left"
+            className="bg-white dark:bg-primary p-4 rounded-[2rem] shadow-lg border border-gray-100 dark:border-white/10 flex items-center justify-between group hover:border-accent transition-all text-left"
           >
             <button 
               onClick={() => onSelectWord(m.word)}
@@ -61,7 +61,7 @@ export const CategoryDetailPage: React.FC<Props> = ({
                 <h4 className="font-black text-gray-900 dark:text-white text-lg">{m.word}</h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-bold italic line-clamp-1">{m.data.meaning}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  <span className="px-2 py-0.5 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-full text-[10px] font-black uppercase tracking-wider">
                     {m.data.level}
                   </span>
                   {m.isMastered && (
@@ -78,7 +78,7 @@ export const CategoryDetailPage: React.FC<Props> = ({
               <button
                 onClick={() => onPlayAudio(m.word)}
                 disabled={isAudioLoading}
-                className="p-2 bg-gray-50 dark:bg-slate-800 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-400 hover:text-indigo-600 transition-colors"
+                className="p-2 bg-gray-50 dark:bg-white/5 rounded-xl hover:bg-accent/10 dark:hover:bg-accent/20 text-gray-400 hover:text-accent transition-colors"
                 title="Listen Pronunciation"
               >
                 {isAudioLoading ? (

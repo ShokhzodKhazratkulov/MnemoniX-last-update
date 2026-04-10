@@ -886,7 +886,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+        <Loader2 className="w-12 h-12 text-accent animate-spin" />
       </div>
     );
   }
@@ -894,7 +894,7 @@ export default function App() {
   const masteredCount = savedMnemonics.filter(m => m.isMastered).length;
 
   return (
-    <div className={`${view === AppView.AUTH ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-[#f8fafc] dark:bg-[#020617] transition-colors duration-500 font-sans selection:bg-indigo-100 selection:text-indigo-900`}>
+    <div className={`${view === AppView.AUTH ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-neutral dark:bg-primary transition-colors duration-500 font-sans selection:bg-accent/10 selection:text-accent`}>
       {/* Navigation Bar */}
       {view !== AppView.AUTH && (
         <nav className="sticky top-0 z-50 px-4 py-4 sm:py-6 bg-transparent">
@@ -904,7 +904,7 @@ export default function App() {
               className="hidden md:flex items-center gap-3 cursor-pointer group"
               onClick={() => navigateTo(AppView.HOME)}
             >
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-accent/20 group-hover:scale-110 transition-transform">
                 M
               </div>
               <span className="text-2xl font-black text-gray-900 dark:text-white tracking-tight hidden lg:block">
@@ -926,7 +926,7 @@ export default function App() {
 
             {/* Mobile Centered Logo */}
             <div className="md:hidden flex-[2] flex items-center justify-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/20">
+              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white font-black text-sm shadow-lg shadow-accent/20">
                 M
               </div>
               <span className="text-lg font-black text-gray-900 dark:text-white tracking-tight">
@@ -951,7 +951,7 @@ export default function App() {
                     data-tour={item.tour}
                     className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap ${
                       view === item.id 
-                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
+                        ? 'bg-accent text-white shadow-lg shadow-accent/20' 
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
@@ -963,7 +963,7 @@ export default function App() {
               {/* Voice Assistant Toggle */}
               <button 
                 onClick={() => setState(AppState.VOICE_MODE)}
-                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full shadow-lg shadow-indigo-500/20 font-bold text-sm hover:bg-indigo-700 transition-all"
+                className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-full shadow-lg shadow-accent/20 font-bold text-sm hover:bg-accent-hover transition-all"
               >
                 <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
                 <Mic size={18} />
@@ -974,7 +974,7 @@ export default function App() {
                 <button 
                   onClick={() => setView(AppView.PROFILE)}
                   data-tour="profile"
-                  className="w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 border border-gray-100 dark:border-slate-800 rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm overflow-hidden"
+                  className="w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-primary/80 border border-gray-100 dark:border-white/10 rounded-full text-gray-500 dark:text-gray-400 hover:text-accent dark:hover:text-accent transition-all shadow-sm overflow-hidden"
                 >
                   {userProfile?.avatar_url ? (
                     <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
@@ -984,7 +984,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={toggleTheme}
-                  className="w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 border border-gray-100 dark:border-slate-800 rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm"
+                  className="w-10 h-10 flex items-center justify-center bg-white/80 dark:bg-primary/80 border border-gray-100 dark:border-white/10 rounded-full text-gray-500 dark:text-gray-400 hover:text-accent dark:hover:text-accent transition-all shadow-sm"
                 >
                   {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                 </button>
@@ -1000,7 +1000,7 @@ export default function App() {
                   data-tour="profile"
                   className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${
                     isMenuOpen 
-                      ? 'bg-indigo-600 text-white' 
+                      ? 'bg-accent text-white' 
                       : 'bg-white/80 dark:bg-slate-900/80 border border-gray-100 dark:border-slate-800 text-gray-500 dark:text-gray-400'
                   } shadow-sm`}
                 >
@@ -1071,7 +1071,7 @@ export default function App() {
             >
               {/* Hero Section */}
               <div className="text-center max-w-4xl mx-auto space-y-6 py-4 sm:py-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-sm font-black uppercase tracking-wider animate-bounce">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-full text-sm font-black uppercase tracking-wider animate-bounce">
                   <Sparkles size={16} />
                   {t.aiPowered}
                 </div>
@@ -1085,14 +1085,14 @@ export default function App() {
                 <div className="grid grid-cols-2 sm:flex sm:flex-row justify-center gap-3 sm:gap-4 pt-4 sm:pt-6">
                    <button 
                     onClick={() => setView(AppView.SEARCH)}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-indigo-600 text-white rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl shadow-2xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95 w-full sm:w-auto text-center"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-accent text-white rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl shadow-2xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover transition-all active:scale-95 w-full sm:w-auto text-center"
                    >
                      <Search size={20} className="sm:w-6 sm:h-6" />
                      <span className="leading-tight">{t.btnStartSearch}</span>
                    </button>
                    <button 
                     onClick={() => setState(AppState.VOICE_MODE)}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-white dark:bg-slate-900 border-2 border-gray-100 dark:border-slate-800 rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl text-gray-600 dark:text-gray-400 hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm w-full sm:w-auto text-center"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-white dark:bg-primary border-2 border-gray-100 dark:border-white/10 rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl text-gray-600 dark:text-gray-400 hover:border-accent hover:text-accent dark:hover:text-accent transition-all shadow-sm w-full sm:w-auto text-center"
                    >
                      <Mic size={20} className="sm:w-6 sm:h-6" />
                      <span className="leading-tight">{t.btnVoice}</span>
@@ -1444,11 +1444,11 @@ export default function App() {
                 setView(AppView.PRACTICE);
               }
             }}
-            className="fixed right-6 bottom-24 md:bottom-8 z-[60] flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-full font-black shadow-xl shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 hover:scale-110 transition-all active:scale-95 group"
+            className="fixed right-6 bottom-24 md:bottom-8 z-[60] flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-full font-black shadow-xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover hover:scale-110 transition-all active:scale-95 group"
           >
             <div className="relative">
               <Sparkles size={18} />
-              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full border border-indigo-600 animate-pulse" />
+              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-400 rounded-full border border-accent animate-pulse" />
             </div>
             <span className="text-[10px] sm:text-base font-black">{t.practice}</span>
 
@@ -1481,11 +1481,11 @@ export default function App() {
                 data-tour={item.tour}
                 className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all ${
                   view === item.id 
-                    ? 'text-indigo-600 dark:text-indigo-400' 
+                    ? 'text-accent dark:text-accent' 
                     : 'text-gray-400 dark:text-gray-500'
                 }`}
               >
-                <div className={`p-1.5 rounded-xl transition-all ${view === item.id ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''}`}>
+                <div className={`p-1.5 rounded-xl transition-all ${view === item.id ? 'bg-accent/10 dark:bg-accent/20' : ''}`}>
                   {item.icon}
                 </div>
                 <span className={`text-[9px] font-bold mt-0 ${view === item.id ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
