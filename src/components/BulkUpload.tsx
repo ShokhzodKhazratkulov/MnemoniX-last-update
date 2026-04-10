@@ -129,66 +129,65 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
       
       // 3. Generate Image
       let storedImageUrl = '';
-      try {
-        const base64Image = await gemini.generateImage(mnemonicData.imagePrompt);
-        if (base64Image) {
-          const response = await fetch(base64Image);
-          const imageBlob = await response.blob();
-          const options = {
-            maxSizeMB: 0.2,
-            maxWidthOrHeight: 1024,
-            useWebWorker: true,
-            fileType: 'image/webp'
-          };
-          const compressedFile = await imageCompression(imageBlob as File, options);
-          const fileName = `${normalizedWord}-${targetLanguage}-${Date.now()}.webp`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('mnemonic_assets')
-            .upload(`mnemonics/${fileName}`, compressedFile);
-          
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('mnemonic_assets')
-              .getPublicUrl(`mnemonics/${fileName}`);
-            storedImageUrl = publicUrl;
-          } else {
-            addLog(`Image upload failed for ${normalizedWord}: ${uploadError.message}`);
-          }
-        }
-      } catch (imgErr) {
-        addLog(`Image generation failed for ${normalizedWord}, continuing without image.`);
-        console.error("Image error:", imgErr);
+      const base64Image = await gemini.generateImage(mnemonicData.imagePrompt);
+      if (!base64Image) {
+        throw new Error("Image generation failed: Empty response from AI");
       }
+
+      const response = await fetch(base64Image);
+      const imageBlob = await response.blob();
+      const options = {
+        maxSizeMB: 0.2,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+        fileType: 'image/webp'
+      };
+      const compressedFile = await imageCompression(imageBlob as File, options);
+      const fileName = `${normalizedWord}-${targetLanguage}-${Date.now()}.webp`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('mnemonic_assets')
+        .upload(`mnemonics/${fileName}`, compressedFile);
+      
+      if (uploadError) {
+        throw new Error(`Image upload failed: ${uploadError.message}`);
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('mnemonic_assets')
+        .getPublicUrl(`mnemonics/${fileName}`);
+      storedImageUrl = publicUrl;
 
       // 4. Generate TTS
       let storedAudioUrl = '';
-      try {
-        const audioBase64 = await gemini.generateTTS(
-          `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.connectorSentence}`,
-          targetLanguage
-        );
-        
-        if (audioBase64) {
-          const audioBlob = await (await fetch(`data:audio/mp3;base64,${audioBase64}`)).blob();
-          const audioFileName = `${normalizedWord}-${targetLanguage}-${Date.now()}.mp3`;
-          
-          const { error: audioUploadError } = await supabase.storage
-            .from('mnemonic_assets')
-            .upload(`audio/${audioFileName}`, audioBlob);
-          
-          if (!audioUploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('mnemonic_assets')
-              .getPublicUrl(`audio/${audioFileName}`);
-            storedAudioUrl = publicUrl;
-          } else {
-            addLog(`Audio upload failed for ${normalizedWord}: ${audioUploadError.message}`);
-          }
-        }
-      } catch (audioErr) {
-        addLog(`Audio generation failed for ${normalizedWord}, continuing without audio.`);
-        console.error("Audio error:", audioErr);
+      const audioBase64 = await gemini.generateTTS(
+        `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.connectorSentence}`,
+        targetLanguage
+      );
+      
+      if (!audioBase64) {
+        throw new Error("Audio generation failed: Empty response from AI");
+      }
+
+      const audioBlob = await (await fetch(`data:audio/mp3;base64,${audioBase64}`)).blob();
+      const audioFileName = `${normalizedWord}-${targetLanguage}-${Date.now()}.mp3`;
+      
+      const { error: audioUploadError } = await supabase.storage
+        .from('mnemonic_assets')
+        .upload(`audio/${audioFileName}`, audioBlob);
+      
+      if (audioUploadError) {
+        throw new Error(`Audio upload failed: ${audioUploadError.message}`);
+      }
+
+      const { data: { publicUrl: audioPublicUrl } } = supabase.storage
+        .from('mnemonic_assets')
+        .getPublicUrl(`audio/${audioFileName}`);
+      storedAudioUrl = audioPublicUrl;
+
+      // Final Check: Ensure everything is present before DB insert
+      if (!storedImageUrl || !storedAudioUrl) {
+        throw new Error("Missing assets: Image or Audio URL could not be retrieved.");
       }
 
       // 5. Save to Database
