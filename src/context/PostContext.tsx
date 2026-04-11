@@ -376,15 +376,18 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (existing) {
-        await supabase.from('reactions').delete().eq('id', existing.id);
+        const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+        if (error) throw error;
       } else {
         // Remove dislike if exists
         await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).eq('reaction_type', 'dislike');
-        await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'like' });
+        const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'like' });
+        if (error) throw error;
       }
       // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error toggling like:', err);
+      alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
       await fetchPosts(true); // Rollback/Sync only on error
     }
   }, [fetchPosts]);
@@ -422,14 +425,17 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (existing) {
-        await supabase.from('reactions').delete().eq('id', existing.id);
+        const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+        if (error) throw error;
       } else {
         await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).eq('reaction_type', 'like');
-        await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'dislike' });
+        const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'dislike' });
+        if (error) throw error;
       }
       // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error toggling dislike:', err);
+      alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
       await fetchPosts(true);
     }
   }, [fetchPosts]);
@@ -473,7 +479,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (existing) {
-        await supabase.from('reactions').delete().eq('id', existing.id);
+        const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+        if (error) throw error;
       } else {
         // Remove other emojis first
         const { data: otherEmojis } = await supabase
@@ -489,11 +496,13 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: emoji });
+        const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: emoji });
+        if (error) throw error;
       }
       // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error toggling emoji:', err);
+      alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
       await fetchPosts(true);
     }
   }, [fetchPosts]);
