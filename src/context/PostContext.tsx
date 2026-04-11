@@ -351,11 +351,14 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    const wasLiked = post.engagement.user_liked;
+    const wasDisliked = post.engagement.user_disliked;
+
     // Optimistic Update
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
-      const wasLiked = p.engagement.user_liked;
-      const wasDisliked = p.engagement.user_disliked;
       return {
         ...p,
         engagement: {
@@ -369,26 +372,28 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
 
     try {
-      // Check if reaction exists
-      const { data: existing } = await supabase
-        .from('reactions')
-        .select()
-        .eq('post_id', postId)
-        .eq('user_id', userId)
-        .eq('reaction_type', 'like')
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+      if (wasLiked) {
+        const { error } = await supabase
+          .from('reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', userId)
+          .eq('reaction_type', 'like');
         if (error) throw error;
       } else {
-        // Remove dislike if exists
-        await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).eq('reaction_type', 'dislike');
-        const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'like' });
+        // Remove dislike if exists (don't wait for it to finish to be faster)
+        supabase.from('reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', userId)
+          .eq('reaction_type', 'dislike')
+          .then();
+
+        const { error } = await supabase
+          .from('reactions')
+          .insert({ post_id: postId, user_id: userId, reaction_type: 'like' });
         if (error) throw error;
       }
-      // Small delay then sync to allow DB trigger to finish
-      setTimeout(() => fetchPosts(true), 500);
     } catch (err: any) {
       console.error('Error toggling like:', err);
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
@@ -402,11 +407,14 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    const wasDisliked = post.engagement.user_disliked;
+    const wasLiked = post.engagement.user_liked;
+
     // Optimistic Update
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
-      const wasDisliked = p.engagement.user_disliked;
-      const wasLiked = p.engagement.user_liked;
       return {
         ...p,
         engagement: {
@@ -420,24 +428,28 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
 
     try {
-      const { data: existing } = await supabase
-        .from('reactions')
-        .select()
-        .eq('post_id', postId)
-        .eq('user_id', userId)
-        .eq('reaction_type', 'dislike')
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+      if (wasDisliked) {
+        const { error } = await supabase
+          .from('reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', userId)
+          .eq('reaction_type', 'dislike');
         if (error) throw error;
       } else {
-        await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).eq('reaction_type', 'like');
-        const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'dislike' });
+        // Remove like if exists
+        supabase.from('reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', userId)
+          .eq('reaction_type', 'like')
+          .then();
+
+        const { error } = await supabase
+          .from('reactions')
+          .insert({ post_id: postId, user_id: userId, reaction_type: 'dislike' });
         if (error) throw error;
       }
-      // Small delay then sync to allow DB trigger to finish
-      setTimeout(() => fetchPosts(true), 500);
     } catch (err: any) {
       console.error('Error toggling dislike:', err);
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
@@ -451,11 +463,14 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    const wasSelected = post.engagement.user_emoji === emoji;
+    const prevEmoji = post.engagement.user_emoji;
+
     // Optimistic Update
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
-      const wasSelected = p.engagement.user_emoji === emoji;
-      const prevEmoji = p.engagement.user_emoji;
       
       return {
         ...p,
@@ -475,37 +490,30 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
 
     try {
-      const { data: existing } = await supabase
-        .from('reactions')
-        .select()
-        .eq('post_id', postId)
-        .eq('user_id', userId)
-        .eq('reaction_type', emoji)
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase.from('reactions').delete().eq('id', existing.id);
+      if (wasSelected) {
+        const { error } = await supabase
+          .from('reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', userId)
+          .eq('reaction_type', emoji);
         if (error) throw error;
       } else {
-        // Remove other emojis first
-        const { data: otherEmojis } = await supabase
-          .from('reactions')
-          .select('reaction_type')
-          .eq('post_id', postId)
-          .eq('user_id', userId);
-        
-        if (otherEmojis) {
-          const emojiTypes = otherEmojis.map((r: any) => r.reaction_type).filter((t: any) => !['like', 'dislike'].includes(t));
-          if (emojiTypes.length > 0) {
-            await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).in('reaction_type', emojiTypes);
-          }
+        // Remove other emojis first (don't wait for it to finish to be faster)
+        if (prevEmoji) {
+          supabase.from('reactions')
+            .delete()
+            .eq('post_id', postId)
+            .eq('user_id', userId)
+            .eq('reaction_type', prevEmoji)
+            .then();
         }
 
-        const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: emoji });
+        const { error } = await supabase
+          .from('reactions')
+          .insert({ post_id: postId, user_id: userId, reaction_type: emoji });
         if (error) throw error;
       }
-      // Small delay then sync to allow DB trigger to finish
-      setTimeout(() => fetchPosts(true), 500);
     } catch (err: any) {
       console.error('Error toggling emoji:', err);
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
