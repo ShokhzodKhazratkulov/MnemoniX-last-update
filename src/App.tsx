@@ -124,9 +124,8 @@ export default function App() {
         }
       }
 
-      const base64Audio = await gemini.generateTTS(text, language);
-      if (!base64Audio) throw new Error("No audio data");
-
+      let audioBuffer: AudioBuffer | null = null;
+      
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       }
@@ -135,8 +134,45 @@ export default function App() {
         await audioContextRef.current.resume();
       }
 
-      const decodedData = decode(base64Audio);
-      const audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+      // Check if we have a saved audio URL for this word
+      const savedMnemonic = savedMnemonics.find(m => m.word.toLowerCase() === text.toLowerCase());
+      const audioUrl = savedMnemonic?.data?.audioUrl || savedMnemonic?.audio_url;
+
+      if (audioUrl) {
+        try {
+          const response = await fetch(audioUrl);
+          if (response.ok) {
+            const arrayBuffer = await response.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            // Try standard decoder first
+            try {
+              audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+            } catch (e) {
+              // Fallback to custom PCM decoder
+              audioBuffer = await decodeAudioData(uint8Array, audioContextRef.current, 24000, 1);
+            }
+          }
+        } catch (fetchError) {
+          console.warn("Stored audio failed in App.tsx, falling back to live TTS:", fetchError);
+        }
+      }
+
+      if (!audioBuffer) {
+        const base64Audio = await gemini.generateTTS(text, language);
+        if (!base64Audio) throw new Error("No audio data");
+
+        const decodedData = decode(base64Audio);
+        
+        // Try standard decoder first
+        try {
+          const arrayBuffer = decodedData.buffer;
+          audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+        } catch (e) {
+          // Fallback to custom PCM decoder
+          audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+        }
+      }
 
       if (audioBuffer) {
         const source = audioContextRef.current.createBufferSource();
@@ -150,7 +186,7 @@ export default function App() {
     } finally {
       setIsAudioLoading(false);
     }
-  }, [gemini, language, isAudioLoading]);
+  }, [gemini, language, isAudioLoading, savedMnemonics]);
 
   useEffect(() => {
     localStorage.setItem('mnemonix_ui_language', language);
@@ -203,7 +239,7 @@ export default function App() {
           created_at,
           is_hard,
           is_mastered,
-          mnemonics (word, data, image_url, language)
+          mnemonics (word, data, image_url, audio_url, language)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -216,6 +252,7 @@ export default function App() {
           word: uw.mnemonics.word,
           data: uw.mnemonics.data,
           imageUrl: uw.mnemonics.image_url,
+          audio_url: uw.mnemonics.audio_url,
           timestamp: new Date(uw.created_at).getTime(),
           language: uw.mnemonics.language || contentLanguage,
           isHard: uw.is_hard,
@@ -610,12 +647,14 @@ export default function App() {
           mnemonicData = existingMnemonic.data as MnemonicResponse;
           img = existingMnemonic.image_url;
           audio = existingMnemonic.audio_url;
+          if (mnemonicData) mnemonicData.audioUrl = audio;
         }
       } else {
         // Found immediately with raw query
         mnemonicData = existingMnemonic.data as MnemonicResponse;
         img = existingMnemonic.image_url;
         audio = existingMnemonic.audio_url;
+        if (mnemonicData) mnemonicData.audioUrl = audio;
       }
 
       setMnemonic(mnemonicData);

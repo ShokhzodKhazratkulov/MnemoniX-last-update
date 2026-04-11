@@ -36,6 +36,7 @@ export interface SavedMnemonic {
   word: string;
   data: MnemonicResponse;
   imageUrl: string;
+  audio_url?: string;
   timestamp: number;
   language: Language;
   isHard?: boolean;

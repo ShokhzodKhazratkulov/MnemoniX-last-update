@@ -101,13 +101,27 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
 
       // If we have a stored audio URL and we're playing the main story, use it
       if (data.audioUrl && !text) {
-        const response = await fetch(data.audioUrl);
-        const arrayBuffer = await response.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-        
-        // Use custom PCM decoder because we store raw PCM bytes in Supabase
-        audioBuffer = await decodeAudioData(uint8Array, audioContextRef.current, 24000, 1);
-      } else {
+        try {
+          const response = await fetch(data.audioUrl);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          
+          const arrayBuffer = await response.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+          
+          // Try standard decoder first (in case it's a real WAV/MP3)
+          try {
+            audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+          } catch (e) {
+            // Fallback to custom PCM decoder
+            audioBuffer = await decodeAudioData(uint8Array, audioContextRef.current, 24000, 1);
+          }
+        } catch (fetchError) {
+          console.warn("Stored audio failed, falling back to live TTS:", fetchError);
+          // Fallback to live TTS below
+        }
+      }
+
+      if (!audioBuffer) {
         // Fallback to Gemini TTS
         const ttsText = text || `${safeData.word}. ${safeData.meaning}. ${safeData.phoneticLink}. ${safeData.imagination}. ${safeData.connectorSentence}`;
         const base64Audio = await gemini.generateTTS(ttsText, language);
@@ -117,7 +131,15 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
         }
 
         const decodedData = decode(base64Audio);
-        audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+        
+        // Try standard decoder first
+        try {
+          const arrayBuffer = decodedData.buffer;
+          audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+        } catch (e) {
+          // Fallback to custom PCM decoder
+          audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+        }
       }
 
       if (!audioBuffer) {

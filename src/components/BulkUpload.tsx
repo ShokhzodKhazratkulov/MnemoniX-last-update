@@ -191,6 +191,7 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
       }
 
       // 5. Save to Database
+      mnemonicData.audioUrl = storedAudioUrl;
       const { error: dbError } = await supabase
         .from('mnemonics')
         .insert({

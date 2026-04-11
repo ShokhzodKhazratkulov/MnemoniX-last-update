@@ -80,15 +80,58 @@ export const Flashcards = React.memo(({
 
     setIsAudioLoading(true);
     try {
-      const base64Audio = await gemini.generateTTS(text, language);
-      if (!base64Audio) throw new Error("No audio data");
-
+      let audioBuffer: AudioBuffer | null = null;
+      
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       }
 
-      const decodedData = decode(base64Audio);
-      const audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+
+      // Check if we have a saved audio URL for this word
+      // In Flashcards, we usually play either the word or the whole story
+      const isStory = text.includes('.');
+      const currentMnemonic = filtered[shuffledIndices[currentIndex]];
+      
+      // Only use saved audio if it's the main story and it matches the current card
+      const audioUrl = currentMnemonic?.data?.audioUrl || currentMnemonic?.audio_url;
+      if (isStory && currentMnemonic && audioUrl) {
+        try {
+          const response = await fetch(audioUrl);
+          if (response.ok) {
+            const arrayBuffer = await response.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            // Try standard decoder first
+            try {
+              audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+            } catch (e) {
+              // Fallback to custom PCM decoder
+              audioBuffer = await decodeAudioData(uint8Array, audioContextRef.current, 24000, 1);
+            }
+          }
+        } catch (fetchError) {
+          console.warn("Stored audio failed in Flashcards, falling back to live TTS:", fetchError);
+        }
+      }
+
+      if (!audioBuffer) {
+        const base64Audio = await gemini.generateTTS(text, language);
+        if (!base64Audio) throw new Error("No audio data");
+
+        const decodedData = decode(base64Audio);
+        
+        // Try standard decoder first
+        try {
+          const arrayBuffer = decodedData.buffer;
+          audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+        } catch (e) {
+          // Fallback to custom PCM decoder
+          audioBuffer = await decodeAudioData(decodedData, audioContextRef.current, 24000, 1);
+        }
+      }
 
       if (!audioBuffer) throw new Error("Failed to decode audio");
 
