@@ -604,7 +604,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
                 }`}
               >
                 <span className={isSelected ? '' : 'grayscale'}>{e.emoji}</span>
-                <span>{e.count}</span>
+                <span className="text-accent">{e.count}</span>
               </button>
             );
           })}
@@ -645,14 +645,14 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
               className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.engagement.user_liked ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <Heart size={18} fill={post.engagement.user_liked ? "currentColor" : "none"} />
-              {post.engagement.likes}
+              <span className="text-accent">{post.engagement.likes}</span>
             </button>
             <button 
               onClick={handleDislike}
               className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.engagement.user_disliked ? 'text-accent' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <ThumbsDown size={18} fill={post.engagement.user_disliked ? "currentColor" : "none"} />
-              {post.engagement.dislikes}
+              <span className="text-accent">{post.engagement.dislikes}</span>
             </button>
             {onRemix && !isOwner && (
               <button 

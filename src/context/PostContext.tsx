@@ -382,11 +382,10 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).eq('reaction_type', 'dislike');
         await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'like' });
       }
-      // Silent refresh to ensure sync
-      await fetchPosts(true);
+      // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
     } catch (err) {
       console.error('Error toggling like:', err);
-      await fetchPosts(true); // Rollback/Sync
+      await fetchPosts(true); // Rollback/Sync only on error
     }
   }, [fetchPosts]);
 
@@ -428,7 +427,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await supabase.from('reactions').delete().eq('post_id', postId).eq('user_id', userId).eq('reaction_type', 'like');
         await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'dislike' });
       }
-      await fetchPosts(true);
+      // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
     } catch (err) {
       console.error('Error toggling dislike:', err);
       await fetchPosts(true);
@@ -453,10 +452,9 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...p.engagement,
           impression_emojis: p.engagement.impression_emojis.map(e => {
             if (e.emoji === emoji) {
-              return { ...e, count: wasSelected ? e.count - 1 : e.count + 1 };
-            }
-            if (e.emoji === prevEmoji) {
-              return { ...e, count: e.count - 1 };
+              return { ...e, count: wasSelected ? Math.max(0, e.count - 1) : e.count + 1 };
+            } else if (prevEmoji && e.emoji === prevEmoji) {
+              return { ...e, count: Math.max(0, e.count - 1) };
             }
             return e;
           }),
@@ -493,7 +491,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: emoji });
       }
-      await fetchPosts(true);
+      // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
     } catch (err) {
       console.error('Error toggling emoji:', err);
       await fetchPosts(true);
