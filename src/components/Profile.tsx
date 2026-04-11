@@ -19,7 +19,7 @@ import {
   Trash2
 } from 'lucide-react';
 
-import { Language, AppView, SavedMnemonic } from '../types';
+import { Language, AppView, SavedMnemonic, AppTheme } from '../types';
 import { supabase } from '../supabaseClient';
 
 interface Props {
@@ -51,7 +51,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
     preferred_language: Language.UZBEK,
     ui_language: language,
     daily_goal: 50,
-    ielts_goal: 7
+    ielts_goal: 7,
+    app_theme: AppTheme.ORANGE
   });
 
   useEffect(() => {
@@ -63,7 +64,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
         preferred_language: profile.preferred_language || Language.UZBEK,
         ui_language: language,
         daily_goal: profile.daily_goal || 50,
-        ielts_goal: profile.ielts_goal || 7
+        ielts_goal: profile.ielts_goal || 7,
+        app_theme: profile.app_theme || AppTheme.ORANGE
       });
     } else if (user) {
       fetchProfile();
@@ -97,7 +99,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
           preferred_language: data.preferred_language || Language.UZBEK,
           ui_language: language,
           daily_goal: data.daily_goal || 50,
-          ielts_goal: data.ielts_goal || 7
+          ielts_goal: data.ielts_goal || 7,
+          app_theme: data.app_theme || AppTheme.ORANGE
         });
       } else {
         // Create profile if not exists
@@ -145,6 +148,7 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
           preferred_language: editForm.preferred_language,
           daily_goal: editForm.daily_goal,
           ielts_goal: editForm.ielts_goal,
+          app_theme: editForm.app_theme,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -540,6 +544,18 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                             {Object.values(Language).map((l) => (
                               <option key={l} value={l}>{l}</option>
                             ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">{t.appTheme}</label>
+                          <select 
+                            value={editForm.app_theme}
+                            onChange={(e) => setEditForm({...editForm, app_theme: e.target.value as AppTheme})}
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                          >
+                            <option value={AppTheme.ORANGE}>{t.themeOrange}</option>
+                            <option value={AppTheme.PURPLE}>{t.themePurple}</option>
                           </select>
                         </div>
 

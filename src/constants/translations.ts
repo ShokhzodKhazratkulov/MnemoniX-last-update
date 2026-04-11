@@ -220,7 +220,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       guestModeNote: "Note: Limited features in Guest Mode. Sign in to sync your data.",
       trialExpired: "Trial Expired",
       trialEnds: "Trial ends",
-      proMember: "Pro Member"
+      proMember: "Pro Member",
+      appTheme: "App Theme",
+      themeOrange: "Orange (Earthy)",
+      themePurple: "Purple (Classic)"
     },
     posts: {
       title: "Community",
@@ -480,7 +483,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       guestModeNote: "Eslatma: Mehmon rejimida funksiyalar cheklangan. Ma'lumotlaringizni sinxronlash uchun tizimga kiring.",
       trialExpired: "Sinov muddati tugadi",
       trialEnds: "Sinov muddati tugaydi",
-      proMember: "PRO a'zo"
+      proMember: "PRO a'zo",
+      appTheme: "Ilova mavzusi",
+      themeOrange: "To'q sariq (Tabiiy)",
+      themePurple: "Siyohrang (Klassik)"
     },
     posts: {
       title: "Hamjamiyat",

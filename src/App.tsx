@@ -29,7 +29,7 @@ import {
   MoreVertical
 } from 'lucide-react';
 
-import { Language, AppState, AppView, MnemonicResponse, SavedMnemonic, Post } from './types';
+import { Language, AppState, AppView, MnemonicResponse, SavedMnemonic, Post, AppTheme } from './types';
 import { GeminiService } from './services/geminiService';
 import { usePosts } from './context/PostContext';
 import { supabase } from './supabaseClient';
@@ -264,7 +264,7 @@ export default function App() {
         if (!data.is_personalized && view !== AppView.PERSONALIZATION) {
           setView(AppView.PERSONALIZATION);
         } else if (data.is_personalized && !data.has_completed_tour && view !== AppView.PERSONALIZATION) {
-          // setShowTour(true); // Disabled for now
+          setShowTour(true);
         }
       } else {
         // Create profile if not exists
@@ -883,6 +883,16 @@ export default function App() {
   }, [user, fetchUserWords]);
 
 
+  // Apply theme
+  useEffect(() => {
+    const theme = userProfile?.app_theme || AppTheme.ORANGE;
+    if (theme === AppTheme.PURPLE) {
+      document.documentElement.classList.add('theme-purple');
+    } else {
+      document.documentElement.classList.remove('theme-purple');
+    }
+  }, [userProfile?.app_theme]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -1185,8 +1195,7 @@ export default function App() {
             <motion.div key="personalization" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <Personalization 
                 user={user} 
-                onComplete={(settings) => {
-                  setLanguage(settings.preferred_language);
+                onComplete={() => {
                   fetchProfile(user.id);
                   setView(AppView.HOME);
                   // setShowTour(true); // Disabled for now

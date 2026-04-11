@@ -8,7 +8,7 @@ import {
   Check,
   Sparkles
 } from 'lucide-react';
-import { Language, AppView } from '../types';
+import { Language, AppView, AppTheme } from '../types';
 import { supabase } from '../supabaseClient';
 
 interface Props {
@@ -21,7 +21,8 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
   const [settings, setSettings] = useState({
     preferred_language: Language.UZBEK,
     daily_goal: 50,
-    ielts_goal: 7
+    ielts_goal: 7,
+    app_theme: AppTheme.ORANGE
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -34,6 +35,7 @@ export const Personalization: React.FC<Props> = ({ user, onComplete }) => {
           preferred_language: settings.preferred_language,
           daily_goal: settings.daily_goal,
           ielts_goal: settings.ielts_goal,
+          app_theme: settings.app_theme,
           is_personalized: true
         })
         .eq('id', user.id);

@@ -121,16 +121,30 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const user_disliked = userReaction?.reaction_type === 'dislike';
         const user_emoji = !['like', 'dislike'].includes(userReaction?.reaction_type) ? userReaction?.reaction_type : undefined;
 
-        // Use the counts from the engagement field
-        const engagement = p.engagement || {
-          likes: 0,
-          dislikes: 0,
-          impression_emojis: [
-            { emoji: "🧠", count: 0 },
-            { emoji: "🔥", count: 0 },
-            { emoji: "🌸", count: 0 },
-            { emoji: "💡", count: 0 }
-          ]
+        // Default emojis to ensure they always exist in the UI
+        const defaultEmojis = [
+          { emoji: "🧠", count: 0 },
+          { emoji: "🔥", count: 0 },
+          { emoji: "🌸", count: 0 },
+          { emoji: "💡", count: 0 }
+        ];
+
+        // Merge with counts from the engagement field
+        const serverEngagement = p.engagement || {};
+        const serverEmojis = serverEngagement.impression_emojis || [];
+        
+        const impression_emojis = defaultEmojis.map(de => {
+          const se = serverEmojis.find((e: any) => e.emoji === de.emoji);
+          return se ? { ...de, count: se.count || 0 } : de;
+        });
+
+        const engagement = {
+          likes: serverEngagement.likes || 0,
+          dislikes: serverEngagement.dislikes || 0,
+          impression_emojis,
+          user_liked,
+          user_disliked,
+          user_emoji
         };
 
         return {
@@ -151,12 +165,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ui_style: p.visuals?.ui_style || 'light'
           },
           language: p.language as Language,
-          engagement: {
-            ...engagement,
-            user_liked,
-            user_disliked,
-            user_emoji
-          },
+          engagement,
           remix_data: p.parent_post_id ? {
             parent_post_id: p.parent_post_id,
             parent_username: p.parent?.profiles?.username || p.parent?.profiles?.full_name || 'Original'
@@ -335,7 +344,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleLike = useCallback(async (postId: string, userId: string) => {
     if (!userId || userId === 'guest') {
-      alert("Iltimos, reaksiya bildirish uchun tizimga kiring.");
+      console.warn("User not logged in for reaction");
       return;
     }
 
@@ -383,7 +392,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleDislike = useCallback(async (postId: string, userId: string) => {
     if (!userId || userId === 'guest') {
-      alert("Iltimos, reaksiya bildirish uchun tizimga kiring.");
+      console.warn("User not logged in for reaction");
       return;
     }
 
@@ -428,7 +437,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleEmoji = useCallback(async (postId: string, userId: string, emoji: string) => {
     if (!userId || userId === 'guest') {
-      alert("Iltimos, reaksiya bildirish uchun tizimga kiring.");
+      console.warn("User not logged in for reaction");
       return;
     }
 

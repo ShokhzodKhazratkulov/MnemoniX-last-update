@@ -9,6 +9,11 @@ export enum Language {
   TURKMEN = 'Turkmen'
 }
 
+export enum AppTheme {
+  ORANGE = 'orange',
+  PURPLE = 'purple'
+}
+
 export interface MnemonicResponse {
   word: string;
   transcription: string;
@@ -79,6 +84,7 @@ export interface Profile {
   ielts_goal?: number;
   is_personalized?: boolean;
   has_completed_tour?: boolean;
+  app_theme?: AppTheme;
 }
 
 export interface Post {
