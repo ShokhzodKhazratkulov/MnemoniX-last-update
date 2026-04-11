@@ -522,7 +522,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                           <select 
                             value={editForm.preferred_language}
                             onChange={(e) => setEditForm({...editForm, preferred_language: e.target.value as Language})}
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            style={{ colorScheme: 'dark' }}
                           >
                             {Object.values(Language).filter(l => l !== Language.ENGLISH).map((l) => (
                               <option key={l} value={l}>{l}</option>
@@ -539,7 +540,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                               setEditForm({...editForm, ui_language: newLang});
                               if (onLanguageChange) onLanguageChange(newLang);
                             }}
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            style={{ colorScheme: 'dark' }}
                           >
                             {Object.values(Language).map((l) => (
                               <option key={l} value={l}>{l}</option>
@@ -552,7 +554,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                           <select 
                             value={editForm.app_theme}
                             onChange={(e) => setEditForm({...editForm, app_theme: e.target.value as AppTheme})}
-                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-white/5 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                            style={{ colorScheme: 'dark' }}
                           >
                             <option value={AppTheme.ORANGE}>{t.themeOrange}</option>
                             <option value={AppTheme.PURPLE}>{t.themePurple}</option>
@@ -574,7 +577,8 @@ export const Profile = React.memo(({ user, savedMnemonics, totalWords, masteredC
                             <select 
                               value={editForm.ielts_goal}
                               onChange={(e) => setEditForm({...editForm, ielts_goal: parseFloat(e.target.value)})}
-                              className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                              className="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-accent rounded-2xl outline-none transition-all font-bold text-gray-900 dark:text-white"
+                              style={{ colorScheme: 'dark' }}
                             >
                               {[6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0].map((score) => (
                                 <option key={score} value={score}>{score % 1 === 0 ? `${score}.0` : score}</option>

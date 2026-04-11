@@ -116,10 +116,13 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const mappedPosts: Post[] = postsData.map((p: any) => {
-        const userReaction = userReactions.find(r => r.post_id === p.id);
-        const user_liked = userReaction?.reaction_type === 'like';
-        const user_disliked = userReaction?.reaction_type === 'dislike';
-        const user_emoji = !['like', 'dislike'].includes(userReaction?.reaction_type) ? userReaction?.reaction_type : undefined;
+        // Filter all reactions for this specific post
+        const postReactions = userReactions.filter(r => r.post_id === p.id);
+        
+        const user_liked = postReactions.some(r => r.reaction_type === 'like');
+        const user_disliked = postReactions.some(r => r.reaction_type === 'dislike');
+        const emojiReaction = postReactions.find(r => !['like', 'dislike'].includes(r.reaction_type));
+        const user_emoji = emojiReaction?.reaction_type;
 
         // Default emojis to ensure they always exist in the UI
         const defaultEmojis = [
@@ -384,7 +387,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'like' });
         if (error) throw error;
       }
-      // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
+      // Small delay then sync to allow DB trigger to finish
+      setTimeout(() => fetchPosts(true), 500);
     } catch (err: any) {
       console.error('Error toggling like:', err);
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
@@ -432,7 +436,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: 'dislike' });
         if (error) throw error;
       }
-      // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
+      // Small delay then sync to allow DB trigger to finish
+      setTimeout(() => fetchPosts(true), 500);
     } catch (err: any) {
       console.error('Error toggling dislike:', err);
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
@@ -499,7 +504,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error } = await supabase.from('reactions').insert({ post_id: postId, user_id: userId, reaction_type: emoji });
         if (error) throw error;
       }
-      // Removed immediate fetchPosts(true) to avoid race condition with DB trigger
+      // Small delay then sync to allow DB trigger to finish
+      setTimeout(() => fetchPosts(true), 500);
     } catch (err: any) {
       console.error('Error toggling emoji:', err);
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
