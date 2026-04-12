@@ -613,7 +613,7 @@ export const Flashcards = React.memo(({
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    const ttsText = `${current.word}. ${current.data.meaning}. ${current.data.phoneticLink}. ${current.data.imagination}`;
+                    const ttsText = `${current.word}. ${current.data.meaning}. ${current.data.phoneticLink}. ${current.data.imagination}. ${current.data.connectorSentence}`;
                     handlePlayAudio(ttsText);
                   }}
                   disabled={isAudioLoading}

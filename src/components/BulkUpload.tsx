@@ -187,10 +187,8 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
 
       // 4. Generate TTS
       let storedAudioUrl = '';
-      const audioBase64 = await gemini.generateTTS(
-        `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.connectorSentence}`,
-        targetLanguage
-      );
+      const ttsText = `${mnemonicData.word}. ${mnemonicData.meaning}. ${mnemonicData.phoneticLink}. ${mnemonicData.imagination}. ${mnemonicData.connectorSentence}`;
+      const audioBase64 = await gemini.generateTTS(ttsText, targetLanguage);
       
       if (!audioBase64) {
         throw new Error("Audio generation failed: Empty response from AI");
