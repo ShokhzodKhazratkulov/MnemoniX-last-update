@@ -213,11 +213,12 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const addPost = useCallback(async (postData: Partial<Post>) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) throw new Error("Iltimos, post yaratish uchun tizimga kiring.");
 
     try {
-      const { error: pError } = await supabase
+      const { data: newPostData, error: pError } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
@@ -235,14 +236,78 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
             { emoji: "🌸", count: 0 },
             { emoji: "💡", count: 0 }
           ]
-        });
+        })
+        .select(`
+          id,
+          created_at,
+          user_id,
+          language,
+          parent_post_id,
+          word,
+          keyword,
+          story,
+          image_url,
+          likes_count,
+          dislikes_count,
+          impression_emojis,
+          is_updated,
+          profiles!user_id (username, full_name, avatar_url),
+          parent:parent_post_id (
+            user_id,
+            profiles:user_id (username, full_name, avatar_url)
+          )
+        `)
+        .single();
 
       if (pError) {
         console.error('Detailed Supabase Insert Error:', pError);
         throw pError;
       }
+
+      if (newPostData) {
+        const mappedPost: Post = {
+          id: newPostData.id,
+          user_id: newPostData.user_id,
+          username: newPostData.profiles?.username || newPostData.profiles?.full_name || 'Unknown',
+          avatar_url: newPostData.profiles?.avatar_url,
+          word: newPostData.word || '',
+          keyword: newPostData.keyword || '',
+          story: newPostData.word || '', // Fallback to word if story is missing
+          image_url: newPostData.image_url,
+          language: newPostData.language as Language,
+          parent_post_id: newPostData.parent_post_id,
+          parent_username: newPostData.parent?.profiles?.username || newPostData.parent?.profiles?.full_name || 'Original',
+          created_at: new Date(newPostData.created_at).getTime(),
+          likes_count: 0,
+          dislikes_count: 0,
+          user_liked: false,
+          user_disliked: false,
+          user_emoji: undefined,
+          impression_emojis: newPostData.impression_emojis || [],
+          is_updated: false
+        };
+        
+        // Fix story if it was actually in the data
+        if (newPostData.story) mappedPost.story = newPostData.story;
+
+        // Prepend to local state for instant feedback
+        setPosts(prev => [mappedPost, ...prev]);
+        
+        // Update cache so it doesn't need to refetch when navigating back
+        const cacheKey = `${lastViewMode}-${lastLanguage}-${user.id}`;
+        if (cache.current[cacheKey]) {
+          cache.current[cacheKey].posts = [mappedPost, ...cache.current[cacheKey].posts];
+        } else {
+          cache.current[cacheKey] = {
+            posts: [mappedPost],
+            hasMore: true,
+            page: 0
+          };
+        }
+      }
       
-      await fetchPosts(true, true, lastViewMode, lastLanguage, true);
+      // Trigger a silent background fetch to ensure everything is in sync, but don't bypass cache next time
+      fetchPosts(true, true, lastViewMode, lastLanguage, false);
     } catch (err: any) {
       console.error('Error adding post:', err);
       throw err;
