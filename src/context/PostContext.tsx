@@ -15,7 +15,7 @@ interface PostContextType {
   isFetchingMore: boolean;
   hasMore: boolean;
   hiddenPosts: string[];
-  fetchPosts: (silent?: boolean, reset?: boolean, viewMode?: string, language?: Language) => Promise<void>;
+  fetchPosts: (silent?: boolean, reset?: boolean, viewMode?: string, language?: Language, bypassCache?: boolean) => Promise<void>;
   loadMore: () => Promise<void>;
 }
 
@@ -34,14 +34,18 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [lastLanguage, setLastLanguage] = useState(Language.UZBEK);
   const cache = React.useRef<Record<string, { posts: Post[], hasMore: boolean, page: number }>>({});
 
-  const fetchPosts = useCallback(async (silent: boolean = false, reset: boolean = false, viewMode: string = 'all', language: Language = Language.UZBEK) => {
+  const fetchPosts = useCallback(async (silent: boolean = false, reset: boolean = false, viewMode: string = 'all', language: Language = Language.UZBEK, bypassCache: boolean = false) => {
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
     const cacheKey = `${viewMode}-${language}-${user?.id || 'guest'}`;
 
     if (reset) {
+      if (bypassCache) {
+        delete cache.current[cacheKey];
+      }
+      
       // If we have a cache, set it immediately but still fetch in the background
-      if (cache.current[cacheKey]) {
+      if (cache.current[cacheKey] && !bypassCache) {
         setPosts(cache.current[cacheKey].posts);
         setHasMore(cache.current[cacheKey].hasMore);
         setPage(0);
@@ -52,7 +56,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setHasMore(true);
       setLastViewMode(viewMode);
       setLastLanguage(language);
-    } else if (cache.current[cacheKey] && page === 0 && !silent) {
+    } else if (cache.current[cacheKey] && page === 0 && !silent && !bypassCache) {
       setPosts(cache.current[cacheKey].posts);
       setHasMore(cache.current[cacheKey].hasMore);
       setPage(cache.current[cacheKey].page);
@@ -161,7 +165,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user_disliked,
           user_emoji,
           impression_emojis,
-          is_updated
+          is_updated: p.is_updated
         };
       });
 
@@ -182,7 +186,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
       setIsFetchingMore(false);
     }
-  }, [page]);
+  }, [page, lastViewMode, lastLanguage]);
 
   const loadMore = useCallback(async () => {
     if (isFetchingMore || !hasMore) return;
@@ -198,8 +202,6 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [page, fetchPosts, lastViewMode, lastLanguage]);
 
   useEffect(() => {
-    fetchPosts();
-    
     const savedHidden = localStorage.getItem('mnemonix_hidden_posts');
     if (savedHidden) {
       try {
@@ -240,7 +242,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw pError;
       }
       
-      await fetchPosts(true, true, lastViewMode, lastLanguage);
+      await fetchPosts(true, true, lastViewMode, lastLanguage, true);
     } catch (err: any) {
       console.error('Error adding post:', err);
       throw err;

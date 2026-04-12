@@ -62,7 +62,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
   // Reset and refetch when viewMode or language changes
   useEffect(() => {
     fetchPosts(false, true, viewMode, language);
-  }, [viewMode, language]);
+  }, [viewMode, language, fetchPosts]);
   const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingPostId, setEditingPostId] = useState<string | null>(editingPost?.id || null);
