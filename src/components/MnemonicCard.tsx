@@ -66,7 +66,10 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, mnemon
         const updatedData = { ...data, nuance_data: generatedNuance };
         await supabase
           .from('mnemonics')
-          .update({ data: updatedData })
+          .update({ 
+            data: updatedData,
+            nuance_data: generatedNuance 
+          })
           .eq('id', mnemonicId);
       }
     } catch (err) {

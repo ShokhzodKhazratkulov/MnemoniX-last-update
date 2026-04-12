@@ -240,7 +240,7 @@ export default function App() {
           created_at,
           is_hard,
           is_mastered,
-          mnemonics (word, data, image_url, audio_url, language)
+          mnemonics (id, word, data, image_url, audio_url, language, nuance_data)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -250,8 +250,12 @@ export default function App() {
       if (data) {
         const formatted: SavedMnemonic[] = data.map((uw: any) => ({
           id: uw.id,
+          mnemonicId: uw.mnemonics.id,
           word: uw.mnemonics.word,
-          data: uw.mnemonics.data,
+          data: {
+            ...(uw.mnemonics.data as any),
+            nuance_data: uw.mnemonics.nuance_data || (uw.mnemonics.data as any).nuance_data
+          },
           imageUrl: uw.mnemonics.image_url,
           audio_url: uw.mnemonics.audio_url,
           timestamp: new Date(uw.created_at).getTime(),
@@ -638,7 +642,10 @@ export default function App() {
                 .limit(1);
               const existing = existingList?.[0];
               if (existing) {
-                mnemonicData = existing.data as MnemonicResponse;
+                mnemonicData = {
+                  ...(existing.data as MnemonicResponse),
+                  nuance_data: existing.nuance_data || (existing.data as any).nuance_data
+                };
                 img = existing.image_url;
               }
             } else {
@@ -648,14 +655,20 @@ export default function App() {
           }
         } else {
           // Found after spelling correction
-          mnemonicData = existingMnemonic.data as MnemonicResponse;
+          mnemonicData = {
+            ...(existingMnemonic.data as MnemonicResponse),
+            nuance_data: existingMnemonic.nuance_data || (existingMnemonic.data as any).nuance_data
+          };
           img = existingMnemonic.image_url;
           audio = existingMnemonic.audio_url;
           if (mnemonicData) mnemonicData.audioUrl = audio;
         }
       } else {
         // Found immediately with raw query
-        mnemonicData = existingMnemonic.data as MnemonicResponse;
+        mnemonicData = {
+          ...(existingMnemonic.data as MnemonicResponse),
+          nuance_data: existingMnemonic.nuance_data || (existingMnemonic.data as any).nuance_data
+        };
         img = existingMnemonic.image_url;
         audio = existingMnemonic.audio_url;
         if (mnemonicData) mnemonicData.audioUrl = audio;
@@ -711,6 +724,7 @@ export default function App() {
         // Guest mode - local state only
         const newSavedMnemonic: SavedMnemonic = {
           id: Math.random().toString(36).substr(2, 9),
+          mnemonicId: currentId || Math.random().toString(36).substr(2, 9),
           word: mnemonicData.word,
           data: mnemonicData,
           imageUrl: img,
@@ -866,6 +880,7 @@ export default function App() {
         // Guest mode
         const newSavedMnemonic: SavedMnemonic = {
           id: Math.random().toString(36).substr(2, 9),
+          mnemonicId: Math.random().toString(36).substr(2, 9),
           word: post.word,
           data: mnemonicData,
           imageUrl: post.image_url || '',
@@ -1448,7 +1463,7 @@ export default function App() {
                   data={selectedMnemonicForReview.data} 
                   imageUrl={selectedMnemonicForReview.imageUrl} 
                   language={selectedMnemonicForReview.language} 
-                  mnemonicId={selectedMnemonicForReview.id}
+                  mnemonicId={selectedMnemonicForReview.mnemonicId}
                   onPractice={startPractice}
                   t={t}
                 />

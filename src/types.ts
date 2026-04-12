@@ -47,6 +47,7 @@ export interface MnemonicResponse {
 
 export interface SavedMnemonic {
   id: string;
+  mnemonicId: string;
   word: string;
   data: MnemonicResponse;
   imageUrl: string;
