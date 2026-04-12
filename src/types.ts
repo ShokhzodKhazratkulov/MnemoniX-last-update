@@ -90,35 +90,25 @@ export interface Profile {
 
 export interface Post {
   id: string;
-  post_metadata: {
-    username: string;
-    avatar_url?: string | null;
-    timestamp: number;
-    user_id: string;
-  };
-  mnemonic_data: {
-    english_word: string;
-    native_keyword: string;
-    story: string;
-  };
-  visuals: {
-    user_uploaded_image: string | null;
-    audio_url?: string | null;
-    ui_style: 'light' | 'dark';
-  };
+  user_id: string;
+  username: string;
+  avatar_url?: string | null;
+  word: string;
+  keyword: string;
+  story: string;
+  image_url: string | null;
   language: Language;
-  engagement: {
-    likes: number;
-    dislikes: number;
-    impression_emojis: { emoji: string; count: number }[];
-    user_liked?: boolean;
-    user_disliked?: boolean;
-    user_emoji?: string;
-  };
-  remix_data?: {
-    parent_post_id: string;
-    parent_username: string;
-  };
+  parent_post_id?: string | null;
+  parent_username?: string | null;
+  created_at: number;
+  likes_count: number;
+  dislikes_count: number;
+  user_liked?: boolean;
+  user_disliked?: boolean;
+  user_emoji?: string;
+  impression_emojis: { emoji: string; count: number }[];
+  ui_style: 'light' | 'dark';
+  is_updated?: boolean;
 }
 
 declare global {

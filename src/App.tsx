@@ -802,12 +802,12 @@ export default function App() {
     try {
       // Create a full MnemonicResponse object from the post data
       const mnemonicData: MnemonicResponse = {
-        word: post.mnemonic_data.english_word,
+        word: post.word,
         transcription: '',
-        meaning: post.mnemonic_data.native_keyword, // Fallback to keyword
+        meaning: post.keyword, // Fallback to keyword
         morphology: '',
-        imagination: post.mnemonic_data.story,
-        phoneticLink: post.mnemonic_data.native_keyword,
+        imagination: post.story,
+        phoneticLink: post.keyword,
         connectorSentence: '',
         examples: [],
         synonyms: [],
@@ -819,7 +819,7 @@ export default function App() {
       const { data: existingList } = await supabase
         .from('mnemonics')
         .select('id')
-        .eq('word', post.mnemonic_data.english_word)
+        .eq('word', post.word)
         .eq('language', post.language)
         .limit(1);
       
@@ -827,9 +827,9 @@ export default function App() {
 
       if (!existing) {
         await supabase.from('mnemonics').insert({
-          word: post.mnemonic_data.english_word,
+          word: post.word,
           data: mnemonicData,
-          image_url: post.visuals.user_uploaded_image,
+          image_url: post.image_url,
           language: post.language
         });
       }
@@ -839,7 +839,7 @@ export default function App() {
         const { data: wordRecords } = await supabase
           .from('mnemonics')
           .select('id')
-          .eq('word', post.mnemonic_data.english_word)
+          .eq('word', post.word)
           .eq('language', post.language)
           .limit(1);
         
@@ -861,9 +861,9 @@ export default function App() {
         // Guest mode
         const newSavedMnemonic: SavedMnemonic = {
           id: Math.random().toString(36).substr(2, 9),
-          word: post.mnemonic_data.english_word,
+          word: post.word,
           data: mnemonicData,
-          imageUrl: post.visuals.user_uploaded_image || '',
+          imageUrl: post.image_url || '',
           timestamp: Date.now(),
           language: language,
           isHard: false,
@@ -1277,8 +1277,8 @@ export default function App() {
                 savedMnemonics={savedMnemonics}
                 totalWords={savedMnemonics.length} 
                 masteredCount={masteredCount}
-                userPostCount={posts.filter(p => p.post_metadata.user_id === user?.id && !p.remix_data).length}
-                userRemixCount={posts.filter(p => p.post_metadata.user_id === user?.id && !!p.remix_data).length}
+                userPostCount={posts.filter(p => p.user_id === user?.id && !p.parent_post_id).length}
+                userRemixCount={posts.filter(p => p.user_id === user?.id && !!p.parent_post_id).length}
                 onSignOut={async () => { 
                   await supabase.auth.signOut();
                   setIsGuest(true); 

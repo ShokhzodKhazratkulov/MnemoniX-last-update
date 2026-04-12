@@ -75,15 +75,18 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id,
           created_at,
           user_id,
-          mnemonic_id,
           language,
           parent_post_id,
-          mnemonic_data,
-          visuals,
-          engagement,
+          word,
+          keyword,
+          story,
+          image_url,
+          likes_count,
+          dislikes_count,
+          impression_emojis,
           is_updated,
+          ui_style,
           profiles!user_id (username, full_name, avatar_url),
-          mnemonics:mnemonic_id (word, keyword, story, image_url, data),
           parent:parent_post_id (
             user_id,
             profiles:user_id (username, full_name, avatar_url)
@@ -132,49 +135,36 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           { emoji: "💡", count: 0 }
         ];
 
-        // Merge with counts from the engagement field
-        const serverEngagement = p.engagement || {};
-        const serverEmojis = serverEngagement.impression_emojis || [];
+        // Merge with counts from the impression_emojis field
+        const serverEmojis = p.impression_emojis || [];
         
         const impression_emojis = defaultEmojis.map(de => {
           const se = serverEmojis.find((e: any) => e.emoji === de.emoji);
           return se ? { ...de, count: se.count || 0 } : de;
         });
 
-        const engagement = {
-          likes: serverEngagement.likes || 0,
-          dislikes: serverEngagement.dislikes || 0,
-          impression_emojis,
-          user_liked,
-          user_disliked,
-          user_emoji
-        };
-
         return {
           id: p.id,
-          post_metadata: {
-            username: p.profiles?.username || p.profiles?.full_name || 'Unknown',
-            avatar_url: p.profiles?.avatar_url,
-            timestamp: new Date(p.created_at).getTime(),
-            user_id: p.user_id
-          },
-          mnemonic_data: {
-            english_word: p.mnemonic_data?.english_word || p.mnemonics?.word || '',
-            native_keyword: p.mnemonic_data?.native_keyword || p.mnemonics?.keyword || p.mnemonics?.data?.phoneticLink || '',
-            story: p.mnemonic_data?.story || p.mnemonics?.story || p.mnemonics?.data?.imagination || ''
-          },
-          visuals: {
-            user_uploaded_image: p.visuals?.user_uploaded_image !== undefined ? p.visuals.user_uploaded_image : (p.mnemonics?.image_url || null),
-            ui_style: p.visuals?.ui_style || 'light'
-          },
+          user_id: p.user_id,
+          username: p.profiles?.username || p.profiles?.full_name || 'Unknown',
+          avatar_url: p.profiles?.avatar_url,
+          word: p.word || '',
+          keyword: p.keyword || '',
+          story: p.story || '',
+          image_url: p.image_url,
           language: p.language as Language,
-          engagement,
-          remix_data: p.parent_post_id ? {
-            parent_post_id: p.parent_post_id,
-            parent_username: p.parent?.profiles?.username || p.parent?.profiles?.full_name || 'Original'
-          } : undefined,
+          parent_post_id: p.parent_post_id,
+          parent_username: p.parent?.profiles?.username || p.parent?.profiles?.full_name || 'Original',
+          created_at: new Date(p.created_at).getTime(),
+          likes_count: p.likes_count || 0,
+          dislikes_count: p.dislikes_count || 0,
+          user_liked,
+          user_disliked,
+          user_emoji,
+          impression_emojis,
+          ui_style: p.ui_style || 'light',
           is_updated: p.is_updated
-        } as any;
+        };
       });
 
       setPosts(prev => {
@@ -227,93 +217,25 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) throw new Error("Iltimos, post yaratish uchun tizimga kiring.");
 
     try {
-      // 1. Ensure mnemonic exists or create it
-      let mnemonicId;
-      const { data: existingMnemonic } = await supabase
-        .from('mnemonics')
-        .select('id')
-        .eq('word', postData.mnemonic_data?.english_word)
-        .eq('language', postData.language)
-        .maybeSingle();
-
-      if (existingMnemonic) {
-        mnemonicId = existingMnemonic.id;
-      } else {
-        const mnemonicData = {
-          word: postData.mnemonic_data?.english_word || '',
-          transcription: '',
-          meaning: postData.mnemonic_data?.native_keyword || '',
-          morphology: '',
-          imagination: postData.mnemonic_data?.story || '',
-          phoneticLink: postData.mnemonic_data?.native_keyword || '',
-          connectorSentence: '',
-          examples: [],
-          synonyms: [],
-          imagePrompt: '',
-          level: 'Intermediate'
-        };
-
-        const { data: newMnemonic, error: mError } = await supabase
-          .from('mnemonics')
-          .insert({
-            word: postData.mnemonic_data?.english_word,
-            data: mnemonicData,
-            image_url: postData.visuals?.user_uploaded_image,
-            language: postData.language,
-            keyword: postData.mnemonic_data?.native_keyword,
-            story: postData.mnemonic_data?.story
-          })
-          .select()
-          .single();
-
-        if (mError) {
-          if (mError.code === '23505') {
-            const { data: existing } = await supabase
-              .from('mnemonics')
-              .select('id')
-              .eq('word', postData.mnemonic_data?.english_word)
-              .eq('language', postData.language)
-              .single();
-            if (existing) {
-              mnemonicId = existing.id;
-            } else {
-              throw mError;
-            }
-          } else {
-            throw mError;
-          }
-        } else {
-          mnemonicId = newMnemonic.id;
-        }
-      }
-
-      // 2. Create post
       const { error: pError } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
-          mnemonic_id: mnemonicId,
+          word: postData.word,
+          keyword: postData.keyword,
+          story: postData.story,
+          image_url: postData.image_url,
           language: postData.language,
-          parent_post_id: postData.remix_data?.parent_post_id,
-          mnemonic_data: {
-            english_word: postData.mnemonic_data?.english_word,
-            native_keyword: postData.mnemonic_data?.native_keyword,
-            story: postData.mnemonic_data?.story
-          },
-          visuals: {
-            user_uploaded_image: postData.visuals?.user_uploaded_image,
-            ui_style: 'light'
-          },
-          engagement: {
-            likes: 0,
-            dislikes: 0,
-            impression_emojis: [
-              { emoji: "🧠", count: 0 },
-              { emoji: "🔥", count: 0 },
-              { emoji: "🌸", count: 0 },
-              { emoji: "💡", count: 0 }
-            ]
-          }
+          parent_post_id: postData.parent_post_id,
+          ui_style: postData.ui_style || 'light',
+          likes_count: 0,
+          dislikes_count: 0,
+          impression_emojis: [
+            { emoji: "🧠", count: 0 },
+            { emoji: "🔥", count: 0 },
+            { emoji: "🌸", count: 0 },
+            { emoji: "💡", count: 0 }
+          ]
         });
 
       if (pError) {
@@ -321,11 +243,12 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw pError;
       }
       
-      await fetchPosts(true);
-    } catch (err) {
+      await fetchPosts(true, true, lastViewMode, lastLanguage);
+    } catch (err: any) {
       console.error('Error adding post:', err);
+      throw err;
     }
-  }, [fetchPosts]);
+  }, [fetchPosts, lastViewMode, lastLanguage]);
 
   const deletePost = useCallback(async (postId: string) => {
     try {
@@ -353,21 +276,18 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-    const wasLiked = post.engagement.user_liked;
-    const wasDisliked = post.engagement.user_disliked;
+    const wasLiked = post.user_liked;
+    const wasDisliked = post.user_disliked;
 
     // Optimistic Update
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
       return {
         ...p,
-        engagement: {
-          ...p.engagement,
-          likes: wasLiked ? p.engagement.likes - 1 : p.engagement.likes + 1,
-          dislikes: wasDisliked ? p.engagement.dislikes - 1 : p.engagement.dislikes,
-          user_liked: !wasLiked,
-          user_disliked: false
-        }
+        likes_count: wasLiked ? p.likes_count - 1 : p.likes_count + 1,
+        dislikes_count: wasDisliked ? p.dislikes_count - 1 : p.dislikes_count,
+        user_liked: !wasLiked,
+        user_disliked: false
       };
     }));
 
@@ -409,21 +329,18 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-    const wasDisliked = post.engagement.user_disliked;
-    const wasLiked = post.engagement.user_liked;
+    const wasDisliked = post.user_disliked;
+    const wasLiked = post.user_liked;
 
     // Optimistic Update
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
       return {
         ...p,
-        engagement: {
-          ...p.engagement,
-          dislikes: wasDisliked ? p.engagement.dislikes - 1 : p.engagement.dislikes + 1,
-          likes: wasLiked ? p.engagement.likes - 1 : p.engagement.likes,
-          user_disliked: !wasDisliked,
-          user_liked: false
-        }
+        dislikes_count: wasDisliked ? p.dislikes_count - 1 : p.dislikes_count + 1,
+        likes_count: wasLiked ? p.likes_count - 1 : p.likes_count,
+        user_disliked: !wasDisliked,
+        user_liked: false
       };
     }));
 
@@ -465,8 +382,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-    const wasSelected = post.engagement.user_emoji === emoji;
-    const prevEmoji = post.engagement.user_emoji;
+    const wasSelected = post.user_emoji === emoji;
+    const prevEmoji = post.user_emoji;
 
     // Optimistic Update
     setPosts(prev => prev.map(p => {
@@ -474,18 +391,15 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return {
         ...p,
-        engagement: {
-          ...p.engagement,
-          impression_emojis: p.engagement.impression_emojis.map(e => {
-            if (e.emoji === emoji) {
-              return { ...e, count: wasSelected ? Math.max(0, e.count - 1) : e.count + 1 };
-            } else if (prevEmoji && e.emoji === prevEmoji) {
-              return { ...e, count: Math.max(0, e.count - 1) };
-            }
-            return e;
-          }),
-          user_emoji: wasSelected ? undefined : emoji
-        }
+        impression_emojis: p.impression_emojis.map(e => {
+          if (e.emoji === emoji) {
+            return { ...e, count: wasSelected ? Math.max(0, e.count - 1) : e.count + 1 };
+          } else if (prevEmoji && e.emoji === prevEmoji) {
+            return { ...e, count: Math.max(0, e.count - 1) };
+          }
+          return e;
+        }),
+        user_emoji: wasSelected ? undefined : emoji
       };
     }));
 
@@ -536,8 +450,10 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         supabase
           .from('posts')
           .update({
-            mnemonic_data: updatedPost.mnemonic_data,
-            visuals: updatedPost.visuals,
+            word: updatedPost.word,
+            keyword: updatedPost.keyword,
+            story: updatedPost.story,
+            image_url: updatedPost.image_url,
             is_updated: true,
             updated_at: new Date().toISOString()
           })

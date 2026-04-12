@@ -67,10 +67,10 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
   const [searchQuery, setSearchQuery] = useState('');
   const [editingPostId, setEditingPostId] = useState<string | null>(editingPost?.id || null);
   const [newPost, setNewPost] = useState({
-    english_word: editingPost?.mnemonic_data.english_word || remixSource?.mnemonic_data.english_word || '',
-    native_keyword: editingPost?.mnemonic_data.native_keyword || remixSource?.mnemonic_data.native_keyword || '',
-    story: editingPost?.mnemonic_data.story || remixSource?.mnemonic_data.story || '',
-    image: editingPost?.visuals.user_uploaded_image || remixSource?.visuals.user_uploaded_image || null as string | null
+    word: editingPost?.word || remixSource?.word || '',
+    keyword: editingPost?.keyword || remixSource?.keyword || '',
+    story: editingPost?.story || remixSource?.story || '',
+    image: editingPost?.image_url || remixSource?.image_url || null as string | null
   });
 
   // Update state when editingPost or remixSource changes
@@ -78,18 +78,18 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
     if (editingPost) {
       setEditingPostId(editingPost.id);
       setNewPost({
-        english_word: editingPost.mnemonic_data.english_word,
-        native_keyword: editingPost.mnemonic_data.native_keyword,
-        story: editingPost.mnemonic_data.story,
-        image: editingPost.visuals.user_uploaded_image
+        word: editingPost.word,
+        keyword: editingPost.keyword,
+        story: editingPost.story,
+        image: editingPost.image_url
       });
     } else if (remixSource) {
       setEditingPostId(null);
       setNewPost({
-        english_word: remixSource.mnemonic_data.english_word,
-        native_keyword: remixSource.mnemonic_data.native_keyword,
-        story: remixSource.mnemonic_data.story,
-        image: remixSource.visuals.user_uploaded_image
+        word: remixSource.word,
+        keyword: remixSource.keyword,
+        story: remixSource.story,
+        image: remixSource.image_url
       });
     }
   }, [editingPost, remixSource]);
@@ -103,17 +103,17 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
       if (hiddenPosts.includes(post.id)) return false;
 
       const matchesSearch = !searchLower || 
-        post.mnemonic_data.english_word.toLowerCase().includes(searchLower) ||
-        post.mnemonic_data.native_keyword.toLowerCase().includes(searchLower);
+        post.word.toLowerCase().includes(searchLower) ||
+        post.keyword.toLowerCase().includes(searchLower);
       
       // Strict filter by user's language
       const matchesLanguage = post.language === language;
 
       if (viewMode === 'mine') {
-        return post.post_metadata.user_id === user?.id && !post.remix_data && matchesSearch && matchesLanguage;
+        return post.user_id === user?.id && !post.parent_post_id && matchesSearch && matchesLanguage;
       }
       if (viewMode === 'remixes') {
-        return post.post_metadata.user_id === user?.id && !!post.remix_data && matchesSearch && matchesLanguage;
+        return post.user_id === user?.id && !!post.parent_post_id && matchesSearch && matchesLanguage;
       }
       return matchesSearch && matchesLanguage;
     });
@@ -122,9 +122,9 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
   const leaderboard = React.useMemo(() => {
     const counts: Record<string, { username: string, count: number }> = {};
     posts.forEach(p => {
-      if (p.remix_data) {
-        const parentId = p.remix_data.parent_post_id;
-        const parentUsername = p.remix_data.parent_username;
+      if (p.parent_post_id) {
+        const parentId = p.parent_post_id;
+        const parentUsername = p.parent_username || 'Original';
         if (!counts[parentId]) counts[parentId] = { username: parentUsername, count: 0 };
         counts[parentId].count++;
       }
@@ -156,66 +156,38 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
   };
 
   const handleCreatePost = async () => {
-    if (!newPost.english_word || !newPost.native_keyword || !newPost.story) return;
+    if (!newPost.word || !newPost.keyword || !newPost.story) return;
 
     if (editingPostId) {
       try {
         await updatePost(editingPostId, (prev) => ({
           ...prev,
-          mnemonic_data: {
-            english_word: newPost.english_word,
-            native_keyword: newPost.native_keyword,
-            story: newPost.story
-          },
-          visuals: {
-            ...prev.visuals,
-            user_uploaded_image: newPost.image
-          }
+          word: newPost.word,
+          keyword: newPost.keyword,
+          story: newPost.story,
+          image_url: newPost.image
         }));
         setEditingPostId(null);
-        setNewPost({ english_word: '', native_keyword: '', story: '', image: null });
+        setNewPost({ word: '', keyword: '', story: '', image: null });
         if (onNavigate) onNavigate(AppView.POSTS);
       } catch (err: any) {
         console.error("Error updating post:", err);
         alert(err.message || t.error);
       }
     } else {
-      const post: Post = {
-        id: Date.now().toString(),
-        post_metadata: {
-          username: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Guest',
-          timestamp: Date.now(),
-          user_id: user?.id || ''
-        },
-        mnemonic_data: {
-          english_word: newPost.english_word,
-          native_keyword: newPost.native_keyword,
-          story: newPost.story
-        },
-        visuals: {
-          user_uploaded_image: newPost.image,
-          ui_style: theme
-        },
+      const post: Partial<Post> = {
+        word: newPost.word,
+        keyword: newPost.keyword,
+        story: newPost.story,
+        image_url: newPost.image,
+        ui_style: theme,
         language: language,
-        engagement: {
-          likes: 0,
-          dislikes: 0,
-          impression_emojis: [
-            { emoji: "🧠", count: 0 },
-            { emoji: "🔥", count: 0 },
-            { emoji: "🌸", count: 0 },
-            { emoji: "💡", count: 0 }
-          ]
-        },
-        remix_data: remixSource ? {
-          parent_post_id: remixSource.id,
-          parent_username: remixSource.post_metadata.username
-        } : undefined
+        parent_post_id: remixSource ? remixSource.id : undefined
       };
 
       try {
         await addPost(post);
-        setNewPost({ english_word: '', native_keyword: '', story: '', image: null });
+        setNewPost({ word: '', keyword: '', story: '', image: null });
         if (onNavigate) onNavigate(AppView.POSTS);
       } catch (err: any) {
         console.error("Error creating post:", err);
@@ -230,10 +202,10 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
     } else {
       setEditingPostId(post.id);
       setNewPost({
-        english_word: post.mnemonic_data.english_word,
-        native_keyword: post.mnemonic_data.native_keyword,
-        story: post.mnemonic_data.story,
-        image: post.visuals.user_uploaded_image
+        word: post.word,
+        keyword: post.keyword,
+        story: post.story,
+        image: post.image_url
       });
       if (onNavigate) onNavigate(AppView.CREATE_POST);
     }
@@ -281,15 +253,15 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
             <input 
               type="text"
               placeholder={t.placeholderWord}
-              value={newPost.english_word}
-              onChange={(e) => setNewPost({...newPost, english_word: e.target.value})}
+              value={newPost.word}
+              onChange={(e) => setNewPost({...newPost, word: e.target.value})}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl focus:ring-2 focus:ring-accent text-gray-900 dark:text-white font-bold"
             />
             <input 
               type="text"
               placeholder={t.placeholderKeyword}
-              value={newPost.native_keyword}
-              onChange={(e) => setNewPost({...newPost, native_keyword: e.target.value})}
+              value={newPost.keyword}
+              onChange={(e) => setNewPost({...newPost, keyword: e.target.value})}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 border-none rounded-2xl focus:ring-2 focus:ring-accent text-gray-900 dark:text-white font-bold"
             />
             <textarea 
@@ -338,7 +310,7 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
             <div className="flex gap-2">
               <button 
                 onClick={handleCreatePost}
-                disabled={!newPost.english_word || !newPost.native_keyword || !newPost.story}
+                disabled={!newPost.word || !newPost.keyword || !newPost.story}
                 className="px-12 py-3 bg-accent text-white rounded-full font-bold text-base shadow-lg shadow-accent/20 hover:bg-accent-hover disabled:opacity-50 transition-all active:scale-95"
               >
                 {editingPostId ? (t.save || 'Save') : t.post}
@@ -470,7 +442,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
     toggleEmoji(post.id, user?.id || 'guest', emoji);
   };
 
-  const isOwner = user?.id === post.post_metadata.user_id;
+  const isOwner = user?.id === post.user_id;
 
   return (
     <motion.div 
@@ -483,29 +455,29 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center text-white font-black text-sm overflow-hidden">
-              {post.post_metadata.avatar_url ? (
-                <img src={post.post_metadata.avatar_url} alt={post.post_metadata.username} className="w-full h-full object-cover" />
+              {post.avatar_url ? (
+                <img src={post.avatar_url} alt={post.username} className="w-full h-full object-cover" />
               ) : (
-                post.post_metadata.username[0].toUpperCase()
+                post.username[0].toUpperCase()
               )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <h4 className="font-black text-gray-900 dark:text-white text-sm leading-none truncate max-w-[120px] sm:max-w-none">
-                  {post.post_metadata.username}
+                  {post.username}
                 </h4>
-                {post.remix_data && (
+                {post.parent_post_id && (
                   <div className="flex items-center gap-1 px-2 py-0.5 bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent rounded-full text-[9px] font-black border border-accent/10 dark:border-white/10 min-w-0">
                     <RefreshCw size={8} className="shrink-0" />
                     <span className="truncate">
-                      {t.remixedFrom} @{post.remix_data.parent_username}
+                      {t.remixedFrom} @{post.parent_username}
                     </span>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold mt-1">
                 <Clock size={10} />
-                {new Date(post.post_metadata.timestamp).toLocaleDateString()}
+                {new Date(post.created_at).toLocaleDateString()}
               </div>
             </div>
           </div>
@@ -577,22 +549,22 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
         <div className="space-y-3">
           <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-black text-accent dark:text-accent tracking-tight">
-              {post.mnemonic_data.english_word}
+              {post.word}
             </span>
             <span className="text-lg sm:text-xl font-black text-gray-400 dark:text-slate-600 italic">
-              ≈ {post.mnemonic_data.native_keyword}
+              ≈ {post.keyword}
             </span>
           </div>
           
           <p className="text-gray-700 dark:text-gray-300 font-medium leading-relaxed text-sm sm:text-base">
-            {post.mnemonic_data.story}
+            {post.story}
           </p>
         </div>
 
         {/* Emoji Impressions */}
         <div className="grid grid-cols-4 gap-2 pt-1">
-          {post.engagement.impression_emojis.slice(0, 4).map((e, idx) => {
-            const isSelected = post.engagement.user_emoji === e.emoji;
+          {post.impression_emojis.slice(0, 4).map((e, idx) => {
+            const isSelected = post.user_emoji === e.emoji;
             return (
               <button 
                 key={idx}
@@ -611,11 +583,11 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
         </div>
 
         {/* Image if exists */}
-        {post.visuals.user_uploaded_image && (
+        {post.image_url && (
           <div className="relative rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 group">
             <img 
-              src={post.visuals.user_uploaded_image} 
-              alt={post.mnemonic_data.english_word}
+              src={post.image_url} 
+              alt={post.word}
               className={`w-full h-auto object-cover max-h-80 transition-all duration-700 ${!isImageRevealed ? 'blur-3xl scale-110' : 'blur-0 scale-100'}`}
               referrerPolicy="no-referrer"
             />
@@ -642,17 +614,17 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
           <div className="flex items-center gap-6">
             <button 
               onClick={handleLike}
-              className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.engagement.user_liked ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.user_liked ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <Heart size={18} fill={post.engagement.user_liked ? "currentColor" : "none"} />
-              <span className="text-accent">{post.engagement.likes}</span>
+              <Heart size={18} fill={post.user_liked ? "currentColor" : "none"} />
+              <span className="text-accent">{post.likes_count}</span>
             </button>
             <button 
               onClick={handleDislike}
-              className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.engagement.user_disliked ? 'text-accent' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${post.user_disliked ? 'text-accent' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              <ThumbsDown size={18} fill={post.engagement.user_disliked ? "currentColor" : "none"} />
-              <span className="text-accent">{post.engagement.dislikes}</span>
+              <ThumbsDown size={18} fill={post.user_disliked ? "currentColor" : "none"} />
+              <span className="text-accent">{post.dislikes_count}</span>
             </button>
             {onRemix && !isOwner && (
               <button 
@@ -666,7 +638,7 @@ const PostCard = React.memo(({ post, user, theme, t, language, onDelete, onEdit,
             )}
           </div>
 
-          {(post as any).is_updated && (
+          {post.is_updated && (
             <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
               <Edit2 size={10} />
               <span>{t.edited}</span>
