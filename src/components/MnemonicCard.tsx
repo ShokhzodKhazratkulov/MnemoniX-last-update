@@ -1,15 +1,17 @@
 
 import React, { useEffect, useState, useRef } from 'react';
-import { MnemonicResponse, Language } from '../types';
+import { MnemonicResponse, Language, NuanceData } from '../types';
 import { GeminiService } from '../services/geminiService';
-import { Sparkles, Volume2, Eye, Loader2 } from 'lucide-react';
+import { Sparkles, Volume2, Eye, Loader2, ChevronDown, ChevronUp, Info, AlertTriangle } from 'lucide-react';
 import { decode, decodeAudioData } from '../utils/audioUtils';
-import { AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import { supabase } from '../supabaseClient';
 
 interface Props {
   data: MnemonicResponse;
   imageUrl: string;
   language: Language;
+  mnemonicId?: string; // Added to allow saving nuance data back
   onSearch?: (word: string) => void;
   onPractice?: (word: string, meaning: string) => void;
   t: any;
@@ -17,13 +19,16 @@ interface Props {
 
 const gemini = new GeminiService();
 
-export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSearch, onPractice, t }) => {
+export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, mnemonicId, onSearch, onPractice, t }) => {
   const [timer, setTimer] = useState(5);
   const [showContent, setShowContent] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isImageRevealed, setIsImageRevealed] = useState(false);
+  const [isNuanceOpen, setIsNuanceOpen] = useState(false);
+  const [isGeneratingNuance, setIsGeneratingNuance] = useState(false);
+  const [nuanceData, setNuanceData] = useState<NuanceData | undefined>(data.nuance_data);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const isMounted = useRef(true);
@@ -32,6 +37,44 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
     if (!onSearch) return;
     const word = syn.split('(')[0].trim();
     onSearch(word);
+  };
+
+  useEffect(() => {
+    setNuanceData(data.nuance_data);
+    setIsNuanceOpen(false);
+  }, [data]);
+
+  const handleDeepDive = async () => {
+    if (isNuanceOpen) {
+      setIsNuanceOpen(false);
+      return;
+    }
+
+    if (nuanceData) {
+      setIsNuanceOpen(true);
+      return;
+    }
+
+    setIsGeneratingNuance(true);
+    try {
+      const generatedNuance = await gemini.generateNuance(data.word, data.synonyms, language);
+      setNuanceData(generatedNuance);
+      setIsNuanceOpen(true);
+
+      // Save back to database if we have the ID
+      if (mnemonicId) {
+        const updatedData = { ...data, nuance_data: generatedNuance };
+        await supabase
+          .from('mnemonics')
+          .update({ data: updatedData })
+          .eq('id', mnemonicId);
+      }
+    } catch (err) {
+      console.error('Error generating nuance:', err);
+      alert('Nuance generation failed. Please try again.');
+    } finally {
+      setIsGeneratingNuance(false);
+    }
   };
 
   useEffect(() => {
@@ -302,6 +345,88 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, onSear
                    {syn}
                  </button>
                ))}
+             </div>
+
+             {/* Deep Dive Button */}
+             <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
+               <button
+                 onClick={handleDeepDive}
+                 disabled={isGeneratingNuance}
+                 className="w-full flex items-center justify-between p-4 bg-accent/5 dark:bg-accent/10 hover:bg-accent/10 dark:hover:bg-accent/20 rounded-xl transition-all group"
+               >
+                 <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center text-white shadow-lg shadow-accent/20 group-hover:scale-110 transition-transform">
+                     {isGeneratingNuance ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                   </div>
+                   <div className="text-left">
+                     <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                       {isGeneratingNuance ? 'Generating Deep Dive...' : 'Deep Dive: Usage & Nuance'}
+                     </p>
+                     <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                       Advanced Context & Grammar
+                     </p>
+                   </div>
+                 </div>
+                 {isNuanceOpen ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+               </button>
+
+               <AnimatePresence>
+                 {isNuanceOpen && nuanceData && (
+                   <motion.div
+                     initial={{ height: 0, opacity: 0 }}
+                     animate={{ height: 'auto', opacity: 1 }}
+                     exit={{ height: 0, opacity: 0 }}
+                     className="overflow-hidden"
+                   >
+                     <div className="pt-6 space-y-6">
+                       {/* Core Difference */}
+                       <div className="bg-accent/5 dark:bg-accent/5 p-4 rounded-xl border-l-4 border-accent">
+                         <div className="flex items-center gap-2 mb-2">
+                           <Info size={16} className="text-accent" />
+                           <h4 className="text-xs font-black uppercase tracking-widest text-accent">Core Difference</h4>
+                         </div>
+                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                           {nuanceData.coreDifference}
+                         </p>
+                       </div>
+
+                       {/* Comparison Table */}
+                       <div className="space-y-3">
+                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Usage Comparison</h4>
+                         <div className="grid gap-3">
+                           {nuanceData.comparisonTable.map((item, idx) => (
+                             <div key={idx} className="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-gray-100 dark:border-slate-800">
+                               <div className="flex items-center justify-between mb-2">
+                                 <span className="text-sm font-black text-accent">{item.word}</span>
+                               </div>
+                               <p className="text-sm font-bold text-gray-900 dark:text-white mb-1 italic">"{item.usage}"</p>
+                               <p className="text-xs text-gray-500 dark:text-gray-400">{item.reason}</p>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+
+                       {/* Common Mistake */}
+                       <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/20">
+                         <div className="flex items-center gap-2 mb-3">
+                           <AlertTriangle size={16} className="text-red-500" />
+                           <h4 className="text-xs font-black uppercase tracking-widest text-red-500">Common Mistake</h4>
+                         </div>
+                         <div className="space-y-2">
+                           <div>
+                             <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">Incorrect</p>
+                             <p className="text-sm text-gray-600 dark:text-gray-400 line-through">{nuanceData.commonMistake.incorrect}</p>
+                           </div>
+                           <div>
+                             <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Natural English</p>
+                             <p className="text-sm font-bold text-gray-900 dark:text-white">{nuanceData.commonMistake.natural}</p>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   </motion.div>
+                 )}
+               </AnimatePresence>
              </div>
           </div>
           <div className="bg-gray-100 dark:bg-slate-800/50 p-6 rounded-2xl border border-gray-200 dark:border-slate-800">

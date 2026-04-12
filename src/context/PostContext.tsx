@@ -268,15 +268,15 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const mappedPost: Post = {
           id: newPostData.id,
           user_id: newPostData.user_id,
-          username: newPostData.profiles?.username || newPostData.profiles?.full_name || 'Unknown',
-          avatar_url: newPostData.profiles?.avatar_url,
+          username: (newPostData.profiles as any)?.username || (newPostData.profiles as any)?.full_name || 'Unknown',
+          avatar_url: (newPostData.profiles as any)?.avatar_url,
           word: newPostData.word || '',
           keyword: newPostData.keyword || '',
           story: newPostData.word || '', // Fallback to word if story is missing
           image_url: newPostData.image_url,
           language: newPostData.language as Language,
           parent_post_id: newPostData.parent_post_id,
-          parent_username: newPostData.parent?.profiles?.username || newPostData.parent?.profiles?.full_name || 'Original',
+          parent_username: (newPostData.parent as any)?.profiles?.username || (newPostData.parent as any)?.profiles?.full_name || 'Original',
           created_at: new Date(newPostData.created_at).getTime(),
           likes_count: 0,
           dislikes_count: 0,

@@ -10,6 +10,7 @@ interface SearchPageProps {
   language: Language;
   state: AppState;
   mnemonic: MnemonicResponse | null;
+  mnemonicId?: string;
   imageUrl: string;
   error: string | null;
   searchQuery: string;
@@ -28,6 +29,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
   language,
   state,
   mnemonic,
+  mnemonicId,
   imageUrl,
   error,
   searchQuery,
@@ -254,6 +256,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({
               data={mnemonic} 
               imageUrl={imageUrl} 
               language={language} 
+              mnemonicId={mnemonicId}
               onSearch={(word) => handleSearch(undefined, word)}
               onPractice={onPractice}
               t={t}

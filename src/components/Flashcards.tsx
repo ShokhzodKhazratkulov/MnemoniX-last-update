@@ -397,6 +397,7 @@ export const Flashcards = React.memo(({
                 data={selectedWord.data} 
                 imageUrl={selectedWord.imageUrl} 
                 language={language} 
+                mnemonicId={selectedWord.id}
                 onSearch={onSearchWord}
                 onPractice={onPractice}
                 t={fullT}

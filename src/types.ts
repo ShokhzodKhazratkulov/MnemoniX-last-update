@@ -14,6 +14,19 @@ export enum AppTheme {
   PURPLE = 'purple'
 }
 
+export interface NuanceData {
+  coreDifference: string;
+  comparisonTable: {
+    word: string;
+    usage: string;
+    reason: string;
+  }[];
+  commonMistake: {
+    incorrect: string;
+    natural: string;
+  };
+}
+
 export interface MnemonicResponse {
   word: string;
   transcription: string;
@@ -29,6 +42,7 @@ export interface MnemonicResponse {
   category?: string;
   audioUrl?: string;
   isHard?: boolean;
+  nuance_data?: NuanceData;
 }
 
 export interface SavedMnemonic {

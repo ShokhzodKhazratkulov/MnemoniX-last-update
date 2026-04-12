@@ -303,4 +303,57 @@ CRITICAL RULES:
       return response.text;
     });
   }
+
+  async generateNuance(word: string, synonyms: string[], targetLanguage: Language): Promise<any> {
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Explain the nuance and usage differences between the English word "${word}" and its synonyms: ${synonyms.join(', ')}. Provide the explanation for a ${targetLanguage} speaker.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              coreDifference: { type: Type.STRING, description: "The main conceptual difference between the word and its synonyms in ${targetLanguage}." },
+              comparisonTable: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    word: { type: Type.STRING },
+                    usage: { type: Type.STRING, description: "A natural English sentence using this word." },
+                    reason: { type: Type.STRING, description: "Why this word is used in this specific context (in ${targetLanguage})." }
+                  },
+                  required: ["word", "usage", "reason"]
+                }
+              },
+              commonMistake: {
+                type: Type.OBJECT,
+                properties: {
+                  incorrect: { type: Type.STRING, description: "A common incorrect way a ${targetLanguage} speaker might use the word." },
+                  natural: { type: Type.STRING, description: "The correct, natural way to say it in English." }
+                },
+                required: ["incorrect", "natural"]
+              }
+            },
+            required: ["coreDifference", "comparisonTable", "commonMistake"]
+          },
+          systemInstruction: `You are an expert English Language Coach. 
+          Your goal is to help advanced learners understand the subtle differences (nuances) between similar words.
+          
+          Instructions:
+          1. The "coreDifference" field must be written in ${targetLanguage}.
+          2. The "comparisonTable" should show how the target word and its synonyms are used in different contexts. The "reason" field must be in ${targetLanguage}.
+          3. The "commonMistake" section should highlight a typical error made by ${targetLanguage} speakers due to direct translation, and provide the natural English alternative.
+          4. Keep explanations clear, professional, and practical.
+          5. Return ONLY a valid JSON object.`
+        }
+      });
+
+      const text = response.text;
+      if (!text) throw new Error("Empty response from AI");
+      return JSON.parse(text);
+    });
+  }
 }

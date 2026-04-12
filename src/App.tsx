@@ -80,6 +80,7 @@ export default function App() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [mnemonic, setMnemonic] = useState<MnemonicResponse | null>(null);
+  const [mnemonicId, setMnemonicId] = useState<string | undefined>(undefined);
   const [imageUrl, setImageUrl] = useState('');
   const [savedMnemonics, setSavedMnemonics] = useState<SavedMnemonic[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -522,6 +523,7 @@ export default function App() {
         .limit(1);
       
       let existingMnemonic = rawMnemonics?.[0];
+      let currentId: string | undefined = existingMnemonic?.id;
 
       if (!existingMnemonic) {
         // 2. If not found, check spelling (slower AI call)
@@ -539,6 +541,7 @@ export default function App() {
             .limit(1);
           
           existingMnemonic = correctedMnemonics?.[0];
+          currentId = existingMnemonic?.id;
         }
 
         if (!existingMnemonic) {
@@ -622,6 +625,7 @@ export default function App() {
           }).select().limit(1);
           
           const newMnemonic = newMnemonicList?.[0];
+          currentId = newMnemonic?.id;
 
           if (insertError) {
             // If it already exists (race condition), just fetch it
@@ -658,6 +662,7 @@ export default function App() {
       }
 
       setMnemonic(mnemonicData);
+      setMnemonicId(currentId);
       setImageUrl(img);
       setState(AppState.RESULTS);
       setLoadingMessage('');
@@ -1201,6 +1206,7 @@ export default function App() {
                 language={contentLanguage}
                 state={state}
                 mnemonic={mnemonic}
+                mnemonicId={mnemonicId}
                 imageUrl={imageUrl}
                 error={error}
                 searchQuery={searchQuery}
@@ -1442,6 +1448,7 @@ export default function App() {
                   data={selectedMnemonicForReview.data} 
                   imageUrl={selectedMnemonicForReview.imageUrl} 
                   language={selectedMnemonicForReview.language} 
+                  mnemonicId={selectedMnemonicForReview.id}
                   onPractice={startPractice}
                   t={t}
                 />
