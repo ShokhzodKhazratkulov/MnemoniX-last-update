@@ -642,6 +642,7 @@ export default function App() {
           currentId = newMnemonic?.id;
 
           if (insertError) {
+            console.error('Error inserting mnemonic:', insertError);
             // If it already exists (race condition), just fetch it
             if (insertError.code === '23505') {
               const { data: existingList } = await supabase
@@ -652,6 +653,7 @@ export default function App() {
                 .limit(1);
               const existing = existingList?.[0];
               if (existing) {
+                currentId = existing.id;
                 mnemonicData = {
                   ...(existing.data as MnemonicResponse),
                   nuance_data: existing.nuance_data || (existing.data as any).nuance_data
@@ -664,7 +666,11 @@ export default function App() {
                   try {
                     const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
                     mnemonicData.nuance_data = nuanceData;
-                    await supabase.from('mnemonics').update({ nuance_data: nuanceData }).eq('id', existing.id);
+                    const { error: updateError } = await supabase.from('mnemonics').update({ 
+                      data: mnemonicData,
+                      nuance_data: nuanceData 
+                    }).eq('id', existing.id);
+                    if (updateError) console.error('Error updating nuance (race):', updateError);
                   } catch (nuanceErr) {
                     console.error('Error updating nuance for existing word (race):', nuanceErr);
                   }
@@ -691,7 +697,11 @@ export default function App() {
             try {
               const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
               mnemonicData.nuance_data = nuanceData;
-              await supabase.from('mnemonics').update({ nuance_data: nuanceData }).eq('id', existingMnemonic.id);
+              const { error: updateError } = await supabase.from('mnemonics').update({ 
+                data: mnemonicData,
+                nuance_data: nuanceData 
+              }).eq('id', existingMnemonic.id);
+              if (updateError) console.error('Error updating nuance (spell):', updateError);
             } catch (nuanceErr) {
               console.error('Error updating nuance for existing word:', nuanceErr);
             }
@@ -713,7 +723,11 @@ export default function App() {
           try {
             const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
             mnemonicData.nuance_data = nuanceData;
-            await supabase.from('mnemonics').update({ nuance_data: nuanceData }).eq('id', existingMnemonic.id);
+            const { error: updateError } = await supabase.from('mnemonics').update({ 
+              data: mnemonicData,
+              nuance_data: nuanceData 
+            }).eq('id', existingMnemonic.id);
+            if (updateError) console.error('Error updating nuance (raw):', updateError);
           } catch (nuanceErr) {
             console.error('Error updating nuance for existing word:', nuanceErr);
           }

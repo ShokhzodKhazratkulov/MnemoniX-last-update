@@ -307,9 +307,10 @@ CRITICAL RULES:
   async generateNuance(word: string, synonyms: string[], targetLanguage: Language): Promise<any> {
     return this.withRetry(async () => {
       const ai = this.getAI();
+      const synonymsList = synonyms && synonyms.length > 0 ? synonyms.join(', ') : 'common synonyms';
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `Explain the nuance and usage differences between the English word "${word}" and its synonyms: ${synonyms.join(', ')}. Provide the explanation for a ${targetLanguage} speaker.`,
+        contents: `Explain the nuance and usage differences between the English word "${word}" and its synonyms: ${synonymsList}. Provide the explanation for a ${targetLanguage} speaker.`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
