@@ -318,7 +318,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
       await fetchPosts(true); // Rollback/Sync only on error
     }
-  }, [fetchPosts]);
+  }, [posts, fetchPosts]);
 
   const toggleDislike = useCallback(async (postId: string, userId: string) => {
     if (!userId || userId === 'guest') {
@@ -371,7 +371,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
       await fetchPosts(true);
     }
-  }, [fetchPosts]);
+  }, [posts, fetchPosts]);
 
   const toggleEmoji = useCallback(async (postId: string, userId: string, emoji: string) => {
     if (!userId || userId === 'guest') {
@@ -432,7 +432,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
       alert(`Xatolik: ${err.message || 'Reaksiyani saqlab bo\'lmadi'}`);
       await fetchPosts(true);
     }
-  }, [fetchPosts]);
+  }, [posts, fetchPosts]);
 
   const updatePost = useCallback(async (postId: string, updater: (post: Post) => Post) => {
     try {
