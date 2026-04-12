@@ -180,7 +180,6 @@ export const Posts = React.memo(({ user, language, theme, viewMode = 'all', onNa
         keyword: newPost.keyword,
         story: newPost.story,
         image_url: newPost.image,
-        ui_style: theme,
         language: language,
         parent_post_id: remixSource ? remixSource.id : undefined
       };

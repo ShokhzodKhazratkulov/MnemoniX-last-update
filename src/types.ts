@@ -107,7 +107,6 @@ export interface Post {
   user_disliked?: boolean;
   user_emoji?: string;
   impression_emojis: { emoji: string; count: number }[];
-  ui_style: 'light' | 'dark';
   is_updated?: boolean;
 }
 

@@ -85,7 +85,6 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           dislikes_count,
           impression_emojis,
           is_updated,
-          ui_style,
           profiles!user_id (username, full_name, avatar_url),
           parent:parent_post_id (
             user_id,
@@ -162,8 +161,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user_disliked,
           user_emoji,
           impression_emojis,
-          ui_style: p.ui_style || 'light',
-          is_updated: p.is_updated
+          is_updated
         };
       });
 
@@ -227,7 +225,6 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           image_url: postData.image_url,
           language: postData.language,
           parent_post_id: postData.parent_post_id,
-          ui_style: postData.ui_style || 'light',
           likes_count: 0,
           dislikes_count: 0,
           impression_emojis: [
