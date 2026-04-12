@@ -1213,18 +1213,18 @@ export default function App() {
 
                 <div className="grid grid-cols-2 sm:flex sm:flex-row justify-center gap-3 sm:gap-4 pt-4 sm:pt-6">
                    <button 
-                    onClick={() => setView(AppView.SEARCH)}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-accent text-white rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl shadow-2xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover transition-all active:scale-95 w-full sm:w-auto text-center"
-                   >
-                     <Search size={20} className="sm:w-6 sm:h-6" />
-                     <span className="leading-tight">{t.btnStartSearch}</span>
-                   </button>
-                   <button 
                     onClick={() => setState(AppState.VOICE_MODE)}
                     className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-white dark:bg-primary border-2 border-gray-100 dark:border-white/10 rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl text-gray-600 dark:text-gray-400 hover:border-accent hover:text-accent dark:hover:text-accent transition-all shadow-sm w-full sm:w-auto text-center"
                    >
                      <Mic size={20} className="sm:w-6 sm:h-6" />
                      <span className="leading-tight">{t.btnVoice}</span>
+                   </button>
+                   <button 
+                    onClick={() => setView(AppView.SEARCH)}
+                    className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 px-4 py-4 sm:px-10 sm:py-5 bg-accent text-white rounded-2xl sm:rounded-[2rem] font-black text-sm sm:text-xl shadow-2xl shadow-accent/20 dark:shadow-none hover:bg-accent-hover transition-all active:scale-95 w-full sm:w-auto text-center"
+                   >
+                     <Search size={20} className="sm:w-6 sm:h-6" />
+                     <span className="leading-tight">{t.btnStartSearch}</span>
                    </button>
                 </div>
               </div>
