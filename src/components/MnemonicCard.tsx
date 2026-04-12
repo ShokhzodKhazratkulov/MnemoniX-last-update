@@ -363,7 +363,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, mnemon
                    </div>
                    <div className="text-left">
                      <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                       {isGeneratingNuance ? 'Generating Deep Dive...' : 'Deep Dive: Usage & Nuance'}
+                       {isGeneratingNuance ? (t.loadingNuance || 'Generating Deep Dive...') : (t.deepDive || 'Deep Dive: Usage & Nuance')}
                      </p>
                      <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                        Advanced Context & Grammar
@@ -386,7 +386,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, mnemon
                        <div className="bg-accent/5 dark:bg-accent/5 p-4 rounded-xl border-l-4 border-accent">
                          <div className="flex items-center gap-2 mb-2">
                            <Info size={16} className="text-accent" />
-                           <h4 className="text-xs font-black uppercase tracking-widest text-accent">Core Difference</h4>
+                           <h4 className="text-xs font-black uppercase tracking-widest text-accent">{t.coreDifference || 'Core Difference'}</h4>
                          </div>
                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
                            {nuanceData.coreDifference}
@@ -395,7 +395,7 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, mnemon
 
                        {/* Comparison Table */}
                        <div className="space-y-3">
-                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Usage Comparison</h4>
+                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">{t.usageComparison || 'Usage Comparison'}</h4>
                          <div className="grid gap-3">
                            {nuanceData.comparisonTable.map((item, idx) => (
                              <div key={idx} className="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-gray-100 dark:border-slate-800">
@@ -413,15 +413,15 @@ export const MnemonicCard: React.FC<Props> = ({ data, imageUrl, language, mnemon
                        <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/20">
                          <div className="flex items-center gap-2 mb-3">
                            <AlertTriangle size={16} className="text-red-500" />
-                           <h4 className="text-xs font-black uppercase tracking-widest text-red-500">Common Mistake</h4>
+                           <h4 className="text-xs font-black uppercase tracking-widest text-red-500">{t.commonMistake || 'Common Mistake'}</h4>
                          </div>
                          <div className="space-y-2">
                            <div>
-                             <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">Incorrect</p>
+                             <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">{t.incorrect || 'Incorrect'}</p>
                              <p className="text-sm text-gray-600 dark:text-gray-400 line-through">{nuanceData.commonMistake.incorrect}</p>
                            </div>
                            <div>
-                             <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Natural English</p>
+                             <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">{t.naturalEnglish || 'Natural English'}</p>
                              <p className="text-sm font-bold text-gray-900 dark:text-white">{nuanceData.commonMistake.natural}</p>
                            </div>
                          </div>

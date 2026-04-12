@@ -615,6 +615,15 @@ export default function App() {
           audio = storedAudioUrl || (base64Audio ? `data:audio/wav;base64,${base64Audio}` : '');
           mnemonicData.audioUrl = audio;
 
+          // Generate Deep Dive (Nuance) data automatically for new words
+          setLoadingMessage(t.loadingNuance || 'Analyzing linguistic nuances...');
+          try {
+            const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
+            mnemonicData.nuance_data = nuanceData;
+          } catch (nuanceErr) {
+            console.error('Error generating nuance for new word:', nuanceErr);
+          }
+
           // Save to global library
           const { data: newMnemonicList, error: insertError } = await supabase.from('mnemonics').insert({
             word: correctedWord,
@@ -625,7 +634,8 @@ export default function App() {
             language: contentLanguage,
             keyword: mnemonicData.phoneticLink,
             story: mnemonicData.imagination,
-            category: mnemonicData.category
+            category: mnemonicData.category,
+            nuance_data: mnemonicData.nuance_data
           }).select().limit(1);
           
           const newMnemonic = newMnemonicList?.[0];
@@ -647,6 +657,18 @@ export default function App() {
                   nuance_data: existing.nuance_data || (existing.data as any).nuance_data
                 };
                 img = existing.image_url;
+
+                // Generate Deep Dive if missing for existing word (race condition path)
+                if (!mnemonicData.nuance_data) {
+                  setLoadingMessage(t.loadingNuance || 'Updating Deep Dive...');
+                  try {
+                    const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
+                    mnemonicData.nuance_data = nuanceData;
+                    await supabase.from('mnemonics').update({ nuance_data: nuanceData }).eq('id', existing.id);
+                  } catch (nuanceErr) {
+                    console.error('Error updating nuance for existing word (race):', nuanceErr);
+                  }
+                }
               }
             } else {
               console.error('Error inserting mnemonic:', insertError);
@@ -662,6 +684,18 @@ export default function App() {
           img = existingMnemonic.image_url;
           audio = existingMnemonic.audio_url;
           if (mnemonicData) mnemonicData.audioUrl = audio;
+
+          // Generate Deep Dive if missing for existing word
+          if (!mnemonicData.nuance_data) {
+            setLoadingMessage(t.loadingNuance || 'Updating Deep Dive...');
+            try {
+              const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
+              mnemonicData.nuance_data = nuanceData;
+              await supabase.from('mnemonics').update({ nuance_data: nuanceData }).eq('id', existingMnemonic.id);
+            } catch (nuanceErr) {
+              console.error('Error updating nuance for existing word:', nuanceErr);
+            }
+          }
         }
       } else {
         // Found immediately with raw query
@@ -672,6 +706,18 @@ export default function App() {
         img = existingMnemonic.image_url;
         audio = existingMnemonic.audio_url;
         if (mnemonicData) mnemonicData.audioUrl = audio;
+
+        // Generate Deep Dive if missing for existing word
+        if (!mnemonicData.nuance_data) {
+          setLoadingMessage(t.loadingNuance || 'Updating Deep Dive...');
+          try {
+            const nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, contentLanguage);
+            mnemonicData.nuance_data = nuanceData;
+            await supabase.from('mnemonics').update({ nuance_data: nuanceData }).eq('id', existingMnemonic.id);
+          } catch (nuanceErr) {
+            console.error('Error updating nuance for existing word:', nuanceErr);
+          }
+        }
       }
 
       setMnemonic(mnemonicData);
