@@ -92,7 +92,7 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
       // 1. Check if word already exists for this language
       const { data: existing, error: checkError } = await supabase
         .from('mnemonics')
-        .select('id')
+        .select('id, data, nuance_data')
         .eq('word', wordProgress.word.toLowerCase().trim())
         .eq('language', targetLanguage)
         .maybeSingle();
@@ -102,7 +102,34 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
       }
 
       if (existing) {
-        addLog(`Word "${wordProgress.word}" already exists in DB. Skipping.`);
+        // If it exists, check if it needs nuance data
+        const currentMnemonicData = existing.data as MnemonicResponse;
+        const currentNuanceData = existing.nuance_data || (currentMnemonicData as any).nuance_data;
+
+        if (!currentNuanceData) {
+          addLog(`Word "${wordProgress.word}" exists but missing Deep Dive. Generating...`);
+          try {
+            const nuanceData = await gemini.generateNuance(currentMnemonicData.word, currentMnemonicData.synonyms, targetLanguage);
+            currentMnemonicData.nuance_data = nuanceData;
+            
+            const { error: updateError } = await supabase
+              .from('mnemonics')
+              .update({ 
+                data: currentMnemonicData,
+                nuance_data: nuanceData 
+              })
+              .eq('id', existing.id);
+
+            if (updateError) throw updateError;
+            addLog(`Success: Updated Deep Dive for "${wordProgress.word}"`);
+          } catch (nuanceErr: any) {
+            console.error('Error updating nuance in bulk upload:', nuanceErr);
+            addLog(`Error updating Deep Dive for "${wordProgress.word}": ${nuanceErr.message}`);
+          }
+        } else {
+          addLog(`Word "${wordProgress.word}" already exists with Deep Dive. Skipping.`);
+        }
+
         setWords(prev => prev.map((w, i) => i === index ? { ...w, status: 'completed' } : w));
         return;
       }
@@ -185,12 +212,23 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
         .getPublicUrl(`audio/${audioFileName}`);
       storedAudioUrl = audioPublicUrl;
 
+      // 5. Generate Deep Dive (Nuance)
+      addLog(`Generating Deep Dive for "${normalizedWord}"...`);
+      let nuanceData = null;
+      try {
+        nuanceData = await gemini.generateNuance(mnemonicData.word, mnemonicData.synonyms, targetLanguage);
+        mnemonicData.nuance_data = nuanceData;
+      } catch (nuanceErr) {
+        console.error('Error generating nuance in bulk upload:', nuanceErr);
+        addLog(`Warning: Nuance generation failed for "${normalizedWord}". Continuing...`);
+      }
+
       // Final Check: Ensure everything is present before DB insert
       if (!storedImageUrl || !storedAudioUrl) {
         throw new Error("Missing assets: Image or Audio URL could not be retrieved.");
       }
 
-      // 5. Save to Database
+      // 6. Save to Database
       mnemonicData.audioUrl = storedAudioUrl;
       const { error: dbError } = await supabase
         .from('mnemonics')
@@ -203,7 +241,8 @@ export const BulkUpload: React.FC<Props> = ({ onBack, t, user, currentLanguage }
           pronunciation_url: storedAudioUrl,
           keyword: mnemonicData.phoneticLink,
           story: mnemonicData.imagination,
-          category: mnemonicData.category
+          category: mnemonicData.category,
+          nuance_data: nuanceData
         });
 
       if (dbError) {
